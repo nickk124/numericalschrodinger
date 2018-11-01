@@ -6,9 +6,8 @@ def initPotential(name, X, h, x0): #initialzes a vector corresponding to the pot
     if name == "free": #free particle
         V = np.zeros(X)
         return V
-    if name == "infwell"
+    if name == "infwell":
         V = np.zeros(X)
         V[0] = np.inf
         V[-1] = np.inf
         return V
-    
