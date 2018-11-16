@@ -11,3 +11,11 @@ def initPotential(name, X, h, x0): #initialzes a vector corresponding to the pot
         V[0] = np.inf
         V[-1] = np.inf
         return V
+
+
+def _3DPlot(): #plotting function that will plot, in 3D, Psi vs. x vs. t
+    return
+#IDEA: add support for colored display of wavefunction phase
+
+def animPlot(): #plotting function that creates time-animated function of Psi vs. x
+    return
