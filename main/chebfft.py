@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.polynomial.chebyshev as cheb
-import schrodingerutils
+import schrodingerutils as sch
+
 
 
 #initializes an array for wavefunction values, where X is the number of x positions on the grid,

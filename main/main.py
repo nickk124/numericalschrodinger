@@ -18,7 +18,7 @@ import schrodingerutils as ut
 
 def schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
 
-    
+
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
@@ -43,8 +43,8 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    #psi_0 = 
-    #xbounds = 
+    #psi_0 =
+    #xbounds =
 
     psi, x, t = schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, fBNC)
 
