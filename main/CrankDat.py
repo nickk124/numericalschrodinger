@@ -14,19 +14,19 @@ def cranknicholson(x,t,delt,delx,fBNC,V_0):
     m = 1.0 # I let m be 1 for now, but we can change it later if need be
     q = (sp.constants.hbar)*delt/(4*m*delx**2)
     r = delt/(2*sp.constants.hbar)
-    phi = np.zeros((J+2,N),complex)
+    phi = np.zeros((J+2,N), dtype=np.complex_)
     # phi_0 = ? Need to figure out what initial phi array will look like
     # check me on these definitions for the tridiag array part
     # I think this is how we should solve it with the CN fn given, but tridiag still confuses me
-    a = np.zeros(J, complex) + (-1.j*q)
-    b = np.zeros(J, complex)
+    a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
+    b = np.zeros(J, dtype=np.complex_)
     c = a.copy()
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
             b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
     V = V_0.copy()
-    r = np.zeros(len(V),complex) # matrix to store each new RHS term in matrix equation
+    r = np.zeros(len(V),dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     for j in range(J): # fill y with initial temperature array, leaving space for boundary conditions
         phi[j+1][0] = phi_0[j]
@@ -46,8 +46,8 @@ def cranknicholson(x,t,delt,delx,fBNC,V_0):
 # r is the RHS vector.
 def tridiag(a,b,c,r):
     n    = b.size
-    gam  = np.zeros(n,complex)
-    u    = np.zeros(n,complex)
+    gam  = np.zeros(n,dtype=np.complex_)
+    u    = np.zeros(n,dtype=np.complex_)
     bet  = b[0]
     u[0] = r[0]/bet
     for j in range(1,n):
