@@ -3,15 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plot
 import matplotlib.animation as animation
 
-def initPotential(name, X, h, x0): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
-    x = np.arange(x0, (X+1)*h, h) #array of x coordinates
-    V = np.zeros(X)
+def initPotential(name, J, h, x0): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
+    x = np.arange(x0, (J+1)*h, h) #array of x coordinates
+    V = np.zeros(J)
     if name == "free": #free particle
         return V
     if name == "infwell":
-        V = np.zeros(X)
-        V[0] = np.inf
-        V[-1] = np.inf
+        #maxFloat = np.finfo('d').max
+        #V = np.zeros(J)
+        #V[0] = maxFloat
+        #V[-1] = maxFloat
         return V
 
 def analytical(name, x, t):
