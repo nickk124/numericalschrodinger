@@ -18,7 +18,7 @@ def Phi(x,n,H,psi): #recursion relation for Phi (see equation 9 in paper)
     if n == 0:
         return psi
     if n == 1:
-        return -1.j * (1.0 / deltaE) * H( Phi(x,0,H,psi) ) + 1.j*(1.0 + Emin/deltaE) * Phi(x,0,H,psi) 
+        return -1.j * (1.0 / deltaE) * H( Phi(x,0,H,psi) ) + 1.j*(1.0 + Emin/deltaE) * Phi(x,0,H,psi)
     elif n > 1:
         return -2.j * (1.0 / deltaE) * H( Phi(x,n-1,H,psi) ) + 2.j * (1.0 + Emin/deltaE)*Phi(x,n-1,H,psi) + Phi(x,n-2,H,psi)
 
@@ -31,6 +31,7 @@ def Hamiltonian(chi,V,x,m): #for some discretized function chi (array), returns 
     return (-1.0 * hbar**2.0 / (2.0*m) )*DDchi(chi,x) + V*chi
     #numpy array element-wise arithmetic is wonderful
 
+
 # name      type                explanation
 # potential string              name of potential energy function
 # psi_0     array               initial wavefunction (1D array of size J)
@@ -41,20 +42,20 @@ def Hamiltonian(chi,V,x,m): #for some discretized function chi (array), returns 
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
 #schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
-def chebyshev_fft(x, t, potential, psi_0, m):
-    J = x.size()
-    N = t.size()
+def chebyshev_fft(x,t,potential,psi_0,m):
+    J = len(x)
+    N = len(t)
     psi = psi_0
     # need to apply boundary conditions for psi_0!!! dependent on potential
     Psi = np.zeros((J,N), dtype=np.complex_)
     Psi[:,0] = psi_0
-    
+
     sumcount = 10 # pre-chosen amount of terms to do in summation (equation 8 in the paper)
-    
+
     dx = np.abs(x[1] - x[0])
     dt = np.abs(t[1] - t[0])
-    V = initPotential(potential, J, h, x[0])
 
+    V = ut.initPotential(potential, J, h, x[0])
     Vmin = np.amin(V)
     Vmax = np.amax(V)
 
@@ -77,6 +78,5 @@ def chebyshev_fft(x, t, potential, psi_0, m):
 
         Psi[:,time] = psi_new
         psi = psi_new
-
 
     return Psi

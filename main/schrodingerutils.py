@@ -6,14 +6,16 @@ import matplotlib.animation as animation
 def initPotential(name, J, h, x0): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
     x = np.arange(x0, (J+1)*h, h) #array of x coordinates
     V = np.zeros(J)
-    if name == "free": #free particle
-        return V
-    if name == "infwell":
-        #maxFloat = np.finfo('d').max
-        #V = np.zeros(J)
-        #V[0] = maxFloat
-        #V[-1] = maxFloat
-        return V
+    if name == 'free': #free particle
+        pass
+    elif name == 'infwell':
+        maxFloat = np.finfo('d').max
+        V[0] = maxFloat
+        V[-1] = maxFloat
+    elif name == 'barrier':
+        V[J//2] = 100 # Place a big ass barrier in the center of the well
+    return V
+
 
 def analytical(name, x, t):
     if name=='free':

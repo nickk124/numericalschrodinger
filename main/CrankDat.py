@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-import schrodingerutils as sch
+import schrodingerutils as ut
 
 # Crank-Nicholson integrator.
 # Returns the full solution array (including
@@ -8,19 +8,24 @@ import schrodingerutils as sch
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
-def cranknicholson(x,t,delt,delx,fBNC,V_0):
-    J        = x.size
-    N        = t.size
-    m = 1.0 # I let m be 1 for now, but we can change it later if need be
+def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
+    J        = len(x)
+    N        = len(t)
     q = (sp.constants.hbar)*delt/(4*m*delx**2)
     r = delt/(2*sp.constants.hbar)
-    phi = np.zeros((J+2,N), dtype=np.complex_)
-    # phi_0 = ? Need to figure out what initial phi array will look like
+
+    psi = np.zeros((J+2,N), dtype=np.complex_)
+    print(psi.shape[0])
+    psi = fBNC(psi)
+    # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
     # I think this is how we should solve it with the CN fn given, but tridiag still confuses me
     a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
     b = np.zeros(J, dtype=np.complex_)
     c = a.copy()
+
+    V = ut.initPotential(potential, J, delx, x[0])
+
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
@@ -29,17 +34,17 @@ def cranknicholson(x,t,delt,delx,fBNC,V_0):
     r = np.zeros(len(V),dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     for j in range(J): # fill y with initial temperature array, leaving space for boundary conditions
-        phi[j+1][0] = phi_0[j]
+        psi[j+1][0] = psi_0[j]
     for n in range(N-1):
-        phi[0][n] = fBNC(0,y[:,n]) # update left bound
-        phi[J+1][n] = fBNC(1,y[:,n]) # update right bound
+        psi[0][n] = fBNC(0,y[:,n]) # update left bound
+        psi[J+1][n] = fBNC(1,y[:,n]) # update right bound
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
-            r[l] = (1.j*q)*(phi[l][n] + phi[l+2][n]) + (1. - (2.*1.j*q) - (1.j*r*V[l]))*phi[l+1][n]
-        phi_next = tridiag(a,b,c,r) # use tridiag to solve now-implicit equation
+            r[l] = (1.j*q)*(psi[l][n] + psi[l+2][n]) + (1. - (2.*1.j*q) - (1.j*r*V[l]))*psi[l+1][n]
+        psi_next = tridiag(a,b,c,r) # use tridiag to solve now-implicit equation
         for j in range(1,J+1,1): # fill y with CN-solved values
-            phi[j][n+1] = phi_next[j-1]
+            psi[j][n+1] = psi_next[j-1]
     # to here ??????
-    return phi[1:J+1,:]
+    return psi[1:J+1,:]
 
 # Solver for a tridiagonal matrix.
 # a,b,c are the lower, center, and upper diagonals,
