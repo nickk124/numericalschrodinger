@@ -15,8 +15,7 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
     r = delt/(2*sp.constants.hbar)
 
     psi = np.zeros((J+2,N), dtype=np.complex_)
-    print(psi.shape[0])
-    psi = fBNC(psi)
+    psi = fBNC(potential, psi)
     # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
     # I think this is how we should solve it with the CN fn given, but tridiag still confuses me
@@ -31,15 +30,16 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
         if k == 0 or k == J-1:
             b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
     V = V_0.copy()
-    r = np.zeros(len(V),dtype=np.complex_) # matrix to store each new RHS term in matrix equation
+    r = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
-    for j in range(J): # fill y with initial temperature array, leaving space for boundary conditions
+    for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
         psi[j+1][0] = psi_0[j]
     for n in range(N-1):
-        psi[0][n] = fBNC(0,y[:,n]) # update left bound
-        psi[J+1][n] = fBNC(1,y[:,n]) # update right bound
+        psi = fBNC(potential, psi)
+        # psi[0][n] = fBNC(0,y[:,n]) # update left bound
+        # psi[J+1][n] = fBNC(1,y[:,n]) # update right bound
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
-            r[l] = (1.j*q)*(psi[l][n] + psi[l+2][n]) + (1. - (2.*1.j*q) - (1.j*r*V[l]))*psi[l+1][n]
+            r[l] = (1.j*q)*(psi[l][n] + psi[l+2][n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1][n] # deleted factor of r
         psi_next = tridiag(a,b,c,r) # use tridiag to solve now-implicit equation
         for j in range(1,J+1,1): # fill y with CN-solved values
             psi[j][n+1] = psi_next[j-1]
