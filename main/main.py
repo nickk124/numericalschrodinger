@@ -13,22 +13,18 @@ m = 1.0     #Define mass as a global variable
 def fillerBoundary(potential, u):
     J = u.shape[0]-2
     # For now, all of the boundaries are the same and simple
-    if potential == 'free':
-        u[0:J+2,0    ] = -u[0:J+2,1]
-        u[0:J+2,J+1  ] = -u[0:J+2,J]
-        u[0    ,0:J+2] = -u[1,0:J+2]
-        u[J+1  ,0:J+2] = -u[J,0:J+2]
+    if potential == 'free' or potential == 'barrier':
+        # Open boundary condition: let the wave travel through the boundary unchanged
+        # We should stop the simulation when the wave reaches the boundary
+        # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
+        u[0:J+2,0] = u[0:J+2,1]
+        u[0:J+2,-1] = u[0:J+2,-2]
     elif potential == 'infwell':
-        u[0:J+2,0    ] = -u[0:J+2,1]
-        u[0:J+2,J+1  ] = -u[0:J+2,J]
-        u[0    ,0:J+2] = -u[1,0:J+2]
-        u[J+1  ,0:J+2] = -u[J,0:J+2]
-
-    elif potential == 'barrier':
-        u[0:J+2,0    ] = -u[0:J+2,1]
-        u[0:J+2,J+1  ] = -u[0:J+2,J]
-        u[0    ,0:J+2] = -u[1,0:J+2]
-        u[J+1  ,0:J+2] = -u[J,0:J+2]
+        # Reflective conditions: ghost cell values are simply those of the nearest real cell
+        # such that du/dx = 0 at ends
+        # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
+        u[0:J+2,0] = u[0:J+2,1]
+        u[0:J+2,J+1] = u[0:J+2,J]
     return u
 
 # name      type                explanation

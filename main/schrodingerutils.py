@@ -23,6 +23,8 @@ def analytical(name, x, t):
     elif name=='infwell':
         a = X/h # Width of the box
         return np.sqrt(2/a)*np.sin(np.pi*x/a)
+    else:
+         return 0 # Analytical solution unknown
 
 
 def _3DPlot(psi, x, t, analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
