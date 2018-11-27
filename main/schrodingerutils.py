@@ -5,12 +5,12 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
-
 # begin with a Gaussian wave-packet
 def fINC(x):
-    a = 1 # Arbitrary scaling
+    width = 1/5 # Variance 
+    a = 1/(width*np.sqrt(2*np.pi))
     mu = np.mean(x)
-    f = a*np.exp(-.5*pow(x-mu/a, 2))
+    f = a*np.exp(-.5*pow((x-mu)/width, 2))
     return f
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
