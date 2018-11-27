@@ -26,7 +26,7 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
-            b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
+            b[k] += 1.j*q # account for boundary conditions in middle diagonal end terms
     rhs = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     #for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
