@@ -13,22 +13,22 @@ m = 1.0     #Define mass as a global variable
 def f(x,y):
     return x
 
-def fillerBoundary(potential, u):
-    J = u.shape[0]-2
+def boundary(potential, u):
+    J = len(u)-2
     # For now, all of the boundaries are the same and simple
     if potential == 'free' or potential == 'barrier':
-        # Open boundary condition: let the wave travel through the boundary unchanged
+        # Periodic boundary condition: let the wave travel through the boundary unchanged
         # We should stop the simulation when the wave reaches the boundary
         # This is way more confusing than intended, so leaving for now
         # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
-        u[0:J+2,0] = u[0:J+2,1]
-        u[0:J+2,-1] = u[0:J+2,-2]
+        u[0] = u[-2]
+        u[-1] = u[1]
     elif potential == 'infwell':
         # Reflective conditions: ghost cell values are simply those of the nearest real cell
         # such that du/dx = 0 at ends
         # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
-        u[0:J+2,0] = u[0:J+2,1]
-        u[0:J+2,J+1] = u[0:J+2,J]
+        u[0] = u[1]
+        u[-1] = u[-2]
     return u
 
 # name      type                explanation
@@ -46,8 +46,7 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     psi_0 = np.zeros(J) # Initial guess for psi
 
     if solver == 'CN':
-        V_0 = np.zeros(J)
-        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,V_0,psi_0,m)
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m)
     elif solver == 'CFFT':
         psi = cf.chebyshev_fft(x,t,potential,psi_0,m)
     return psi, x, t # returned psi is a J by N array of the wavefunction
@@ -77,7 +76,7 @@ def main():
 
     N = J # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
-    psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,fillerBoundary)
+    psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
     psi = abs(psi)
     print(psi)
 
