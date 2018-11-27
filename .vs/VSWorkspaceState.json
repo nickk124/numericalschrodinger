@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\main"
+    "\\main",
+    "\\main\\__pycache__"
   ],
   "SelectedNode": "\\main\\chebfft.py",
   "PreviewInSolutionExplorer": false
