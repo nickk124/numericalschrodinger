@@ -6,6 +6,12 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
 
+# begin with a Gaussian wave-packet
+def fINC(x):
+    a = 1 # Arbitrary scaling
+    mu = np.mean(x)
+    f = a*np.exp(-.5*pow(x-mu/a, 2))
+    return f
 
 def initPotential(name, J, h, x0): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
     x = np.arange(x0, (J+1)*h, h) #array of x coordinates

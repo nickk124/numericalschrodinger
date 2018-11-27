@@ -13,6 +13,13 @@ m = 1.0     #Define mass as a global variable
 def f(x,y):
     return x
 
+# begin with a Gaussian wave-packet
+def fINC(x):
+    a = 1 # Arbitrary scaling
+    mu = np.mean(x)
+    f = a*np.exp(-.5*pow(x-mu/a, 2))
+    return f
+
 def boundary(potential, u):
     J = len(u)-2
     # For now, all of the boundaries are the same and simple

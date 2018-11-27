@@ -21,7 +21,10 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m):
     b = np.zeros(J, dtype=np.complex_)
     c = a.copy()
 
-    V = ut.initPotential(potential, J, delx, x[0])
+    psi[1:-1,0] = ut.fINC(x)
+    psi[:,0] = fBNC(potential, psi[:, 0])
+
+    V = ut.initPotential(potential, x)
 
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
