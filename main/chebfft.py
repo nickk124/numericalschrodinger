@@ -62,7 +62,7 @@ def chebyshev_fft(x, t, potential, psi_0, m):
     Emax = ((hbar**2.0 * np.pi**2.0) / (2.0 * m * dx**2.0) ) + Vmax
     deltaE = (Emax - Emin)/2.0
 
-    a = np.zeros(sumcount, dtype=np.complex_) #list of a_n
+    a = np.zeros(sumcount, dtype=np.complex_) #list of a_n (see equation 8)
 
     for n in range(sumcount):
         a[n] = np.exp( (-1.j*(deltaE + Emin)*dt) / hbar) * D(n) * J(n)
