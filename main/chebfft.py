@@ -1,16 +1,23 @@
 import numpy as np
 import scipy as sp
 from scipy import constants
+from scipy import special
 import schrodingerutils as ut
 
 hbar = sp.constants.hbar
+
+Emin = 0 #defaults
+deltaE = 0
+m = 0
+V = np.array([])
+dt = 0
 
 def D(n):
         if n == 0:
             return 1
         elif n >= 1:
             return 2
-def J(n):
+def JBess(n):
     return sp.special.jv(n, ((deltaE*dt)/hbar))
 
 def Phi(x,n,H,psi): #recursion relation for Phi (see equation 9 in paper)
@@ -45,6 +52,7 @@ def Hamiltonian(chi,V,x,m): #for some discretized function chi (array), returns 
 def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
     J = len(x)
     N = len(t)
+    h = x[1] - x[0]
     #psi = psi_0
     # need to apply boundary conditions for psi_0!!! dependent on potential
     Psi = np.zeros((J+2,N), dtype=np.complex_)
@@ -69,7 +77,7 @@ def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
     a = np.zeros(sumcount, dtype=np.complex_) #list of a_n (see equation 8)
 
     for n in range(sumcount):
-        a[n] = np.exp( (-1.j*(deltaE + Emin)*dt) / hbar) * D(n) * J(n)
+        a[n] = np.exp( (-1.j*(deltaE + Emin)*dt) / hbar) * D(n) * JBess(n)
 
 
     for time in range(1,N):
