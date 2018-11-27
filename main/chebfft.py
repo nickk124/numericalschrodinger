@@ -55,7 +55,7 @@ def chebyshev_fft(x,t,potential,psi_0,m):
     dx = np.abs(x[1] - x[0])
     dt = np.abs(t[1] - t[0])
 
-    V = ut.initPotential(potential, J, h, x[0])
+    V = ut.initPotential(potential, x)
     Vmin = np.amin(V)
     Vmax = np.amax(V)
 
