@@ -85,7 +85,6 @@ def animPlot(psi,x,t,analytical=None): #plotting function that creates time-anim
     plt.ylabel('Numerical $\Psi$')
     ani = animation.FuncAnimation(fig, animateNumerical, interval=100)
 
-
     # If known, show analytical plot
     if analytical != None:
         truePlot = fig.add_subplot(122)
