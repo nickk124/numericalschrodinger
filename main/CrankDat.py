@@ -8,7 +8,7 @@ import schrodingerutils as ut
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
-def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
+def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m): #,V_0
     J        = len(x)
     N        = len(t)
     q = (sp.constants.hbar)*delt/(4*m*delx**2)
@@ -29,7 +29,7 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
             b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
-    V = V_0.copy()
+    #V = V_0.copy()
     r = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
