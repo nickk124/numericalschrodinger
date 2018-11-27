@@ -2,13 +2,13 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np
 import matplotlib.pyplot as plt
-
+import scipy as sp
 import CrankDat as cn
 import chebfft as cf
 import schrodingerutils as ut
 
-m = 1.0     # Define mass as a global variable
-hbar = 1.0  # Define hbar as a global variable
+m = 1e-31    # Define mass as a global variable
+hbar = sp.constants.hbar   # Define hbar as a global variable
 
 def boundary(potential, u):
     J = len(u)-2
