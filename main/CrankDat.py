@@ -14,21 +14,32 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
     q = hbar*delt/(4*m*delx**2)
     r = delt/(2*hbar)
     psi = np.zeros((J+2,N), dtype=np.complex_)
+    psi[:, 0] = psi_0
     # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
     # I think this is how we should solve it with the CN fn given, but tridiag still confuses me
-    a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
-    b = np.zeros(J, dtype=np.complex_)
-    c = a.copy()
-
-    psi[:, 0] = psi_0
-
+    #a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
+    #b = np.zeros(J, dtype=np.complex_)
+    #c = a.copy()
+    A = np.zeros((J,J),dtype=np.complex_)
     V = ut.initPotential(potential, x)
+    for i in range(len(A)):
+        if i == 0:
+            A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
+            A[i][i+1] += (-1.j*q)
+        elif i == len(A)-1:
+            A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
+            A[i][i-1] += (-1.j*q)
+        else:
+            A[i][i] += (1 + 2*1.j*q + 1.j*r*V[i])
+            A[i][i+1] += (-1.j*q)
+            A[i][i-1] += (-1.j*q)
+    Ainv = np.linalg.inv(A)
 
-    for k in range(J):
-        b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
-        if k == 0 or k == J-1:
-            b[k] += 1.j*q # account for boundary conditions in middle diagonal end terms
+    #for k in range(J):
+        #b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
+        #if k == 0 or k == J-1:
+            #b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
     rhs = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     #for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
@@ -37,7 +48,7 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
     for n in range(1,N):
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
-        psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit equation
+        psi[1:-1,n] = np.dot(Ainv,rhs) # use tridiag to solve now-implicit equation
         psi[:,n] = fBNC(potential, psi[:,n-1])
 
 #        for j in range(1,J+1,1): # fill y with CN-solved values
