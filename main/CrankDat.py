@@ -15,12 +15,32 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
     q = hbar*delt/(4*m*delx**2)
     r = delt/(2*hbar)
     psi = np.zeros((J+2,N), dtype=np.complex_)
+    psi[:, 0] = psi_0
     # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
     # I think this is how we should solve it with the CN fn given, but tridiag still confuses me
-    a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
-    b = np.zeros(J, dtype=np.complex_)
-    c = a.copy()
+    #a = np.zeros(J, dtype=np.complex_) + (-1.j*q)
+    #b = np.zeros(J, dtype=np.complex_)
+    #c = a.copy()
+    A = np.zeros((J,J),dtype=np.complex_)
+    V = ut.initPotential(potential, x)
+    for i in range(len(A)):
+        if i == 0:
+            A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
+            A[i][i+1] += (-1.j*q)
+        elif i == len(A)-1:
+            A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
+            A[i][i-1] += (-1.j*q)
+        else:
+            A[i][i] += (1 + 2*1.j*q + 1.j*r*V[i])
+            A[i][i+1] += (-1.j*q)
+            A[i][i-1] += (-1.j*q)
+    Ainv = np.linalg.inv(A)
+
+    #for k in range(J):
+        #b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
+        #if k == 0 or k == J-1:
+            #b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
 
     psi[:, 0] = psi_0
 
