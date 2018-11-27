@@ -8,11 +8,15 @@ import schrodingerutils as ut
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
+<<<<<<< HEAD
 def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m):
+=======
+def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
+>>>>>>> d82b07a640fc1b634104289d6df126c5b8c0c821
     J        = len(x)
     N        = len(t)
-    q = (sp.constants.hbar)*delt/(4*m*delx**2)
-    r = delt/(2*sp.constants.hbar)
+    q = hbar*delt/(4*m*delx**2)
+    r = delt/(2*hbar)
     psi = np.zeros((J+2,N), dtype=np.complex_)
     # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
@@ -38,8 +42,11 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m):
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
         psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit equation
+<<<<<<< HEAD
         psi[:,n] = fBNC(potential, psi[:,n-1])
 
+=======
+>>>>>>> d82b07a640fc1b634104289d6df126c5b8c0c821
 #        for j in range(1,J+1,1): # fill y with CN-solved values
 #            psi[j][n+1] = psi_next[j-1]
     # to here ??????
