@@ -53,9 +53,10 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     psi_0 = np.zeros(J) # Initial guess for psi
 
     if solver == 'CN':
-        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m)
+        #V_0 = np.zeros(J)
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m) #,V_0
     elif solver == 'CFFT':
-        psi = cf.chebyshev_fft(x,t,potential,psi_0,m)
+        psi = cf.chebyshev_fft(x,t,potential,psi_0,m,fBNC, sumcount = 10)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():

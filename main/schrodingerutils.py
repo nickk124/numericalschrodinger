@@ -13,8 +13,9 @@ def fINC(x):
     f = a*np.exp(-.5*pow(x-mu/a, 2))
     return f
 
-def initPotential(name, J, h, x0): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
-    x = np.arange(x0, (J+1)*h, h) #array of x coordinates
+def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
+    x = x.copy() #array of x coordinates
+    J = len(x)
     V = np.zeros(J)
     if name == 'free': #free particle
         pass

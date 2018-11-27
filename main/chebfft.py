@@ -42,20 +42,23 @@ def Hamiltonian(chi,V,x,m): #for some discretized function chi (array), returns 
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
 #schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
-def chebyshev_fft(x,t,potential,psi_0,m):
+def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
     J = len(x)
     N = len(t)
-    psi = psi_0
+    #psi = psi_0
     # need to apply boundary conditions for psi_0!!! dependent on potential
-    Psi = np.zeros((J,N), dtype=np.complex_)
-    Psi[:,0] = psi_0
+    Psi = np.zeros((J+2,N), dtype=np.complex_)
+    Psi[1:J+1,0] = psi_0
 
     sumcount = 10 # pre-chosen amount of terms to do in summation (equation 8 in the paper)
+    for key in kwargs:
+        if (key=='sumcount'):
+            sumcount = kwargs[key]
 
     dx = np.abs(x[1] - x[0])
     dt = np.abs(t[1] - t[0])
 
-    V = ut.initPotential(potential, J, h, x[0])
+    V = ut.initPotential(potential, x)
     Vmin = np.amin(V)
     Vmax = np.amax(V)
 
@@ -70,13 +73,18 @@ def chebyshev_fft(x,t,potential,psi_0,m):
 
 
     for time in range(1,N):
-        # need to apply boundary conditions!!!
-        psi_new = np.zeros(J, dtype=np.complex_)
+        psi_old = Psi[:,time-1] #these psi vectors are of size psi
+        # need to apply boundary conditions
+        psi_new = fBNC(potential, psi_old)
+
+        psi_new_inner = np.zeros(J, dtype=np.complex_)
 
         for n in range(sumcount):
-            psi_new += a[n]*Phi(x,n,Hamiltonian,psi)
+            psi_new_inner += a[n]*Phi(x,n,Hamiltonian,psi_old[1:J+1])
+
+        psi_new[1:J+1] = psi_new_inner 
+        # now psi_new has boundaries generated from last iteration, and inner points generated for current iteration
 
         Psi[:,time] = psi_new
-        psi = psi_new
 
-    return Psi
+    return Psi[1:J+1,:]
