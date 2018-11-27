@@ -8,7 +8,7 @@ import schrodingerutils as ut
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
-def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m):
+def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
     J        = len(x)
     N        = len(t)
     q = (sp.constants.hbar)*delt/(4*m*delx**2)
