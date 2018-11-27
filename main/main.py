@@ -3,22 +3,53 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 import matplotlib.pyplot as plt
 
-import cranknicholson as cn
+import CrankDat as cn
 import chebfft as cf
 import schrodingerutils as ut
+
+
+m = 1.0     #Define mass as a global variable
+
+def f(x,y):
+    return x
+
+def fillerBoundary(potential, u):
+    J = u.shape[0]-2
+    # For now, all of the boundaries are the same and simple
+    if potential == 'free' or potential == 'barrier':
+        # Open boundary condition: let the wave travel through the boundary unchanged
+        # We should stop the simulation when the wave reaches the boundary
+        # This is way more confusing than intended, so leaving for now
+        # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
+        u[0:J+2,0] = u[0:J+2,1]
+        u[0:J+2,-1] = u[0:J+2,-2]
+    elif potential == 'infwell':
+        # Reflective conditions: ghost cell values are simply those of the nearest real cell
+        # such that du/dx = 0 at ends
+        # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
+        u[0:J+2,0] = u[0:J+2,1]
+        u[0:J+2,J+1] = u[0:J+2,J]
+    return u
 
 # name      type                explanation
 # potential string              name of potential energy function
 # psi_0     array               initial wavefunction (1D array of size J)
 # solver    function pointer    type of scheme (chebfft or cranknicholson)
 # J         int                 number of spatial points
-# xbounds   tuple of floats     boundary points for x
 # dt        float               time step
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
-def schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
+def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
+    dx = (xbounds[-1]-xbounds[0])/J
+    x = np.arange(xbounds[0], J*dx, dx) #array of x coordinates
+    t = np.arange(0, N, dt)
+    psi_0 = np.zeros(J) # Initial guess for psi
 
-
+    if solver == 'CN':
+        V_0 = np.zeros(J)
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,V_0,psi_0,m)
+    elif solver == 'CFFT':
+        psi = cf.chebyshev_fft(x,t,potential,psi_0,m)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
@@ -34,7 +65,8 @@ def main():
     parser.add_argument("potential",type=str,
                         help="potentials:\n"
                              "    free    : constant potential\n"
-                             "    infwell : infinite square well")
+                             "    infwell : infinite square well\n"
+                             "    barrier : well with barrier at center")
 
     # -----------------------------------------------------
     args         = parser.parse_args()
@@ -43,13 +75,15 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    #psi_0 =
-    #xbounds =
+    N = J # Use 1000 time support points
+    xbounds = [0,1] # Say we're looking only at the interval [0,1]
+    psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,fillerBoundary)
+    psi = abs(psi)
+    print(psi)
 
-    psi, x, t = schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, fBNC)
-
-    #ut._3DPlot()
-    #ut.animPlot()
+    z = f(x, psi)
+    ut._3DPlot(psi, x, t)
+    ut.animPlot(psi, x, t)
 
 # --------------------------------------------------
 main()
