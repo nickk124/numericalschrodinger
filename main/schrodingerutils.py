@@ -35,7 +35,7 @@ def analytical(name, x, t):
         a = X/h # Width of the box
         return np.sqrt(2/a)*np.sin(np.pi*x/a)
     else:
-         return 0 # Analytical solution unknownz
+         return 0 # Analytical solution unknown
 
 
 def _3DPlot(psi, x, t, analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
@@ -51,8 +51,6 @@ def _3DPlot(psi, x, t, analytical=None): #plotting function that will plot, in 3
     Jmesh, Nmesh = np.meshgrid(t, x)
     print('len Jmesh = ' + str(len(Jmesh)))
     print('len Nmesh = ' + str(len(Nmesh)))
-
-
 
     approx = solutions.add_subplot(plotnum,projection='3d')
     approx.plot_surface(Jmesh[1], Nmesh[0],psi,cmap='rainbow')

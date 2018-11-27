@@ -8,7 +8,7 @@ import schrodingerutils as ut
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
-def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
+def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m):
     J        = len(x)
     N        = len(t)
     q = (sp.constants.hbar)*delt/(4*m*delx**2)
@@ -21,30 +21,25 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
     b = np.zeros(J, dtype=np.complex_)
     c = a.copy()
 
-<<<<<<< HEAD
-    psi[1:-1,0] = ut.fINC(x)
-    psi[:,0] = fBNC(potential, psi[:, 0])
+    psi[:, 0] = psi_0
 
-=======
->>>>>>> f102d7c0f019ca0821b42a033ed8f336584a7596
     V = ut.initPotential(potential, x)
 
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
-            b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
+            b[k] += 1.j*q # account for boundary conditions in middle diagonal end terms
     rhs = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     #for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
     #    psi[j+1,0] = psi_0[j]
 
     for n in range(1,N):
-        psi[:,n] = fBNC(potential, psi[:,n-1])
-        # psi[0][n] = fBNC(0,y[:,n]) # update left bound
-        # psi[J+1][n] = fBNC(1,y[:,n]) # update right bound
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
-        psi[1:-1,n] = tridiag(a,b,c,r) # use tridiag to solve now-implicit equation
+        psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit equation
+        psi[:,n] = fBNC(potential, psi[:,n-1])
+
 #        for j in range(1,J+1,1): # fill y with CN-solved values
 #            psi[j][n+1] = psi_next[j-1]
     # to here ??????
