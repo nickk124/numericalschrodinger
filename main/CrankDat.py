@@ -37,8 +37,12 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
     for n in range(1,N):
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
-        psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit equation
+        psiLast = psi[1:-1, n].copy()
+        psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit
+        if np.array_equal(psiLast,psi[1:-1, n]):
+            print('TERRIBLE')
         psi[:,n] = fBNC(potential, psi[:,n-1])
+
 
 #        for j in range(1,J+1,1): # fill y with CN-solved values
 #            psi[j][n+1] = psi_next[j-1]

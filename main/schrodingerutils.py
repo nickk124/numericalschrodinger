@@ -7,10 +7,10 @@ import matplotlib.cm as cm
 
 # begin with a Gaussian wave-packet
 def fINC(x):
-    width = 1/5 # Variance 
+    width = 1/50 # Variance
     a = 1/(width*np.sqrt(2*np.pi))
     mu = np.mean(x)
-    f = a*np.exp(-.5*pow((x-mu)/width, 2))
+    f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     return f
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
@@ -84,11 +84,9 @@ def animPlot(psi,x,t,analytical=None): #plotting function that creates time-anim
         numPlot.plot(x, psiVal)
         numPlot.set_title('t = ' + str(round(t[i], 2)))
         numPlot.set_xlabel('x')
-        numPlot.set_ylabel('$\Psi$')
+        numPlot.set_ylabel('Numerical $\Psi$')
 
-    plt.xlabel('x')
-    plt.ylabel('Numerical $\Psi$')
-    ani = animation.FuncAnimation(fig, animateNumerical, interval=100)
+    ani = animation.FuncAnimation(fig, animateNumerical, interval=1)
 
     # If known, show analytical plot
     if analytical != None:
