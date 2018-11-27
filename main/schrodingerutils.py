@@ -14,9 +14,7 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     if name == 'free': #free particle
         pass
     elif name == 'infwell':
-        maxFloat = np.finfo('d').max
-        V[0] = maxFloat
-        V[-1] = maxFloat
+        pass
     elif name == 'barrier':
         V[J//2] = 100 # Place a big ass barrier in the center of the well
     return V
