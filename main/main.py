@@ -8,8 +8,8 @@ import chebfft as cf
 import schrodingerutils as ut
 
 
-m = 1.0     #Define mass as a global variable
-
+m = 1.0     # Define mass as a global variable
+hbar = 1.0  # Define hbar as a global variable
 def f(x,y):
     return x
 

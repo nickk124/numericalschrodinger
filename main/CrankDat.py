@@ -11,8 +11,8 @@ import schrodingerutils as ut
 def cranknicholson(x,t,potential,delt,delx,fBNC,V_0,psi_0,m):
     J        = len(x)
     N        = len(t)
-    q = (sp.constants.hbar)*delt/(4*m*delx**2)
-    r = delt/(2*sp.constants.hbar)
+    q = hbar*delt/(4*m*delx**2)
+    r = delt/(2*hbar)
     psi = np.zeros((J+2,N), dtype=np.complex_)
     # psi_0 = ? Need to figure out what initial psi array will look like
     # check me on these definitions for the tridiag array part
