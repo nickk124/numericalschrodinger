@@ -2,16 +2,13 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np
 import matplotlib.pyplot as plt
-
+import scipy as sp
 import CrankDat as cn
 import chebfft as cf
 import schrodingerutils as ut
 
-
-m = 1.0     #Define mass as a global variable
-
-def f(x,y):
-    return x
+m = 1e-31    # Define mass as a global variable
+hbar = sp.constants.hbar   # Define hbar as a global variable
 
 def boundary(potential, u):
     J = len(u)-2
@@ -43,13 +40,15 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     dx = (xbounds[-1]-xbounds[0])/J
     x = np.arange(xbounds[0], J*dx, dx) #array of x coordinates
     t = np.arange(0, N, dt)
-    psi_0 = np.zeros(J) # Initial guess for psi
+
+    psi_0 = np.zeros(J+2) # Initial guess for psi
+    psi_0[1:-1] = ut.fINC(x)
+    psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
-        #V_0 = np.zeros(J)
-        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m) #,V_0
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m,hbar) 
     elif solver == 'CFFT':
-        psi = cf.chebyshev_fft(x,t,potential,psi_0,m,fBNC, sumcount = 10)
+        psi = cf.chebyshev_fft(x,t,potential,psi_0,m)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
@@ -75,14 +74,13 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    N = J # Use 1000 time support points
+    N = 1e3 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
     psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
     psi = abs(psi)
     print(psi)
 
-    z = f(x, psi)
-    ut._3DPlot(psi, x, t)
+    #ut._3DPlot(psi, x, t)
     ut.animPlot(psi, x, t)
 
 # --------------------------------------------------

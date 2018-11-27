@@ -5,7 +5,13 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
-
+# begin with a Gaussian wave-packet
+def fINC(x):
+    width = 1/50 # Variance
+    a = 1/(width*np.sqrt(2*np.pi))
+    mu = np.mean(x)
+    f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+    return f
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
     x = x.copy() #array of x coordinates
@@ -27,7 +33,7 @@ def analytical(name, x, t):
         a = X/h # Width of the box
         return np.sqrt(2/a)*np.sin(np.pi*x/a)
     else:
-         return 0 # Analytical solution unknownz
+         return 0 # Analytical solution unknown
 
 
 def _3DPlot(psi, x, t, analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
@@ -43,8 +49,6 @@ def _3DPlot(psi, x, t, analytical=None): #plotting function that will plot, in 3
     Jmesh, Nmesh = np.meshgrid(t, x)
     print('len Jmesh = ' + str(len(Jmesh)))
     print('len Nmesh = ' + str(len(Nmesh)))
-
-
 
     approx = solutions.add_subplot(plotnum,projection='3d')
     approx.plot_surface(Jmesh[1], Nmesh[0],psi,cmap='rainbow')
@@ -78,11 +82,9 @@ def animPlot(psi,x,t,analytical=None): #plotting function that creates time-anim
         numPlot.plot(x, psiVal)
         numPlot.set_title('t = ' + str(round(t[i], 2)))
         numPlot.set_xlabel('x')
-        numPlot.set_ylabel('$\Psi$')
+        numPlot.set_ylabel('Numerical $\Psi$')
 
-    plt.xlabel('x')
-    plt.ylabel('Numerical $\Psi$')
-    ani = animation.FuncAnimation(fig, animateNumerical, interval=100)
+    ani = animation.FuncAnimation(fig, animateNumerical, interval=1)
 
     # If known, show analytical plot
     if analytical != None:

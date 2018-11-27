@@ -4,7 +4,6 @@ from scipy import constants
 from scipy import special
 import schrodingerutils as ut
 
-hbar = sp.constants.hbar
 
 class CFFT:
     def __init__(self, V, dt, dx, m):
@@ -110,7 +109,7 @@ def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
         for n in range(sumcount):
             psi_new_inner += a[n]*Phi(x,n,Hamiltonian,psi_old[1:J+1], cfft)
 
-        psi_new[1:J+1] = psi_new_inner 
+        psi_new[1:J+1] = psi_new_inner
         # now psi_new has boundaries generated from last iteration, and inner points generated for current iteration
 
         Psi[:,time] = psi_new
