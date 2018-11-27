@@ -9,6 +9,7 @@ import schrodingerutils as ut
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
 def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
+    V = ut.initPotential(potential, x)
     J        = len(x)
     N        = len(t)
     q = hbar*delt/(4*m*delx**2)
@@ -22,8 +23,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
     c = a.copy()
 
     psi[:, 0] = psi_0
-
-    V = ut.initPotential(potential, x)
 
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
@@ -39,8 +38,8 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
         psiLast = psi[1:-1, n].copy()
         psi[1:-1,n] = tridiag(a,b,c,rhs) # use tridiag to solve now-implicit
-        if np.array_equal(psiLast,psi[1:-1, n]):
-            print('TERRIBLE')
+        #if np.array_equal(psiLast,psi[1:-1, n]):
+        #    print('Tridiag Not Working')
         psi[:,n] = fBNC(potential, psi[:,n-1])
 
 
