@@ -7,14 +7,43 @@ import matplotlib.cm as cm
 
 m = 1.0
 hbar = 1.0
-omega = 100
+k = 1.0
+omega = np.sqrt(k/m)
 
-# begin with a Gaussian wave-packet
-def fINC(x):
-    width = 1/50 # Variance
-    a = 1/(width*np.sqrt(2*np.pi))
+# Sets up the initial conditions for each potential configuration
+def fINC(name, x):
+    J = len(x)
     mu = np.mean(x)
-    f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+    if name == 'free':
+        width = 1/50 # Variance
+        a = 1/(width*np.sqrt(2*np.pi))
+        f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+    elif name == 'infwell':
+        a = 1
+        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a)
+    elif name == 'finwell':
+        L = x[3*J//4] - x[J//4] # Size of the well
+        A = 0.05
+        B = 0.5
+        C = 1
+        alpha = k*np.tan(k*L/2)
+        # Outside the well, decaying exponential
+        f = np.zeros(J)
+        f[0:J//4] = A*np.exp(-alpha*(mu - x[0:J//4]))
+        f[3*J//4] = B*np.exp(alpha*(mu - x[3*J//4]))
+        f[J//4:3*J//4] = C*np.cos(k*(mu - x[J//4:3*J//4]))
+    elif name == 'barrier':
+        width = 1/50 # Variance
+        a = 1/(width*np.sqrt(2*np.pi))
+        mu = x[J//4]
+        f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+    elif name == 'harmonic':
+        f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
+
+        pass
+
+    plt.plot(x, f)
+    plt.show()
     return f
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
@@ -24,7 +53,7 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     if name == 'free' or name == 'infwell': #free particle
         pass
     elif name == 'barrier':
-        V[J//2] = 100 # Place a big ass barrier in the center of the well
+        V[J//2-4:J//2+4] = 100 # Place a big barrier in the center of the well
     elif name == 'finwell':
         V[0:J//4] = 2
         V[3*J//4:] = 2
@@ -53,8 +82,6 @@ def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D
     solutions = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
     solutions.suptitle('Numerical and Analytical Solutions for ')
     Jmesh, Nmesh = np.meshgrid(t, x)
-    print('len Jmesh = ' + str(len(Jmesh)))
-    print('len Nmesh = ' + str(len(Nmesh)))
 
     approx = solutions.add_subplot(plotnum,projection='3d')
     approx.plot_surface(Jmesh[1], Nmesh[0],psi,cmap='rainbow')
@@ -70,9 +97,8 @@ def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D
         true.set_ylabel('t')
         true.set_xlabel('x')
 
-
     plt.show()
-#IDEA: add support for colored display of wavefunction phase
+    #IDEA: add support for colored display of wavefunction phase
 
 def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
     plotnum = 211
@@ -83,6 +109,7 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
 
     fig = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
     numPlot = fig.add_subplot(plotnum)
+    maxVal = np.max(psi)
 
     def animateNumerical(i): # Takes the interval number as input: used to index values
         psiVal = psi[:, i]
@@ -92,6 +119,9 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
         numPlot.set_title('t = ' + str(round(t[i], 2)))
         numPlot.set_xlabel('x')
         numPlot.set_ylabel('Numerical $\Psi$')
+        numPlot.set_ylim([0,maxVal])
+
+        #numPlot.set_ylim(maxVal)
 
     ani = animation.FuncAnimation(fig, animateNumerical, interval=1)
 
@@ -107,6 +137,7 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
             truePlot.set_title('t = ' + str(round(t[i], 2)))
             truePlot.set_xlabel('x')
             truePlot.set_ylabel('$\Psi$')
+            truePlot.set_ylim([0,maxVal])
 
         plt.xlabel('x')
         plt.ylabel('Analytical $\Psi$')
