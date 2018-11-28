@@ -2,13 +2,16 @@ import numpy as np
 import scipy as sp
 import schrodingerutils as ut
 
+hbar = ut.hbar #sp.constants.hbar
+m = ut.m
+
 # Crank-Nicholson integrator.
 # Returns the full solution array (including
 # initial conditions at t=0). Array should be
 # of shape (J,N), with J the spatial and N
 # the temporal support points.
 # Uses tridiag to solve the tridiagonal matrix.
-def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
+def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
     V = ut.initPotential(potential, x)
     J        = len(x)
     N        = len(t)

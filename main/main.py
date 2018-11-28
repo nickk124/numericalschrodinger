@@ -7,8 +7,8 @@ import CrankDat as cn
 import chebfft as cf
 import schrodingerutils as ut
 
-m = 1e-31    # Define mass as a global variable
-hbar = sp.constants.hbar   # Define hbar as a global variable
+hbar = ut.hbar
+m = ut.m
 
 def boundary(potential, u):
     J = len(u)-2
@@ -46,9 +46,11 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
-        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0,m,hbar) 
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0) 
     elif solver == 'CFFT':
-        psi = cf.chebyshev_fft(x,t,potential,psi_0,m)
+        if psi_0.size > J:
+            psi_0 = psi_0[1:J+1].copy()
+        psi = cf.chebyshev_fft(x,t,potential,psi_0,fBNC,sumcount = 10)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():

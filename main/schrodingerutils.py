@@ -5,6 +5,9 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
+m = 1.0
+hbar = 1.0
+
 # begin with a Gaussian wave-packet
 def fINC(x):
     width = 1/50 # Variance
