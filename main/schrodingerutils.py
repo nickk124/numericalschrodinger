@@ -7,9 +7,10 @@ import matplotlib.cm as cm
 import scipy as sp
 from scipy import constants
 
-m = 1.0e-31 # approx mass of an e-
+m = 1e-31 # approx mass of an e-
 hbar = sp.constants.hbar # use hbar constant value from scipy
-omega = 100
+k = 1e-20
+omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
 def fINC(name, x):
@@ -33,8 +34,8 @@ def fINC(name, x):
         f[0:J//4] = A*np.exp(-alpha*(mu - x[0:J//4]))
         f[3*J//4] = B*np.exp(alpha*(mu - x[3*J//4]))
         f[J//4:3*J//4] = C*np.cos(k*(mu - x[J//4:3*J//4]))
-    elif name == 'barrier':
-        width = 1/50 # Variance
+    elif name == 'barrier': # Gaussian on the left side of the barrier
+        width = 1/50
         a = 1/(width*np.sqrt(2*np.pi))
         mu = x[J//4]
         f = a*np.exp(-.5*pow(((x-mu)/width), 2))
@@ -52,10 +53,10 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     if name == 'free' or name == 'infwell': #free particle
         pass
     elif name == 'barrier':
-        V[J//2-4:J//2+4] = 100 # Place a big barrier in the center of the well
+        V[J//2-4:J//2+4] = 3e-34 # Place a big barrier in the center of the well
     elif name == 'finwell':
-        V[0:J//4] = 500
-        V[3*J//4:] = 500
+        V[0:J//4] = 1e-34
+        V[3*J//4:] = 1e-34
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
     return V
@@ -107,8 +108,8 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
 
     fig = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
 
-    psiReal = abs(psi.real)
-    psiComplex = abs(psi.imag)
+    psiReal = psi.real
+    psiComplex = psi.imag
     numPlot = fig.add_subplot(plotnum)
 
     def animateNumerical(i): # Takes the interval number as input: used to index values
@@ -130,8 +131,8 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
     if analytical != None:
         truePlot = fig.add_subplot(312)
         psiTrue = analytical(x, t)
-        realTrue = abs(psiTrue.real)
-        complexTrue = abs(psiTrue.imag)
+        realTrue = psiTrue.real
+        complexTrue = psiTrue.imag
 
         def animateTrue(i): # Takes the interval number as input: used to index values
             realTrueVal = realTrue[:, i]
