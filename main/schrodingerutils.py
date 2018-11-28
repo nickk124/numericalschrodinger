@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
+import scipy as sp
+from scipy import constants
 
-m = 1.0
-hbar = 1.0
+m = 1.0e-31 # approx mass of an e-
+hbar = sp.constants.hbar # use hbar constant value from scipy
 omega = 100
 
 # begin with a Gaussian wave-packet
