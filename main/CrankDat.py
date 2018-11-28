@@ -106,5 +106,5 @@ def diffusion_solve(J,minmaxx,dt0,minmaxt,fINT,fBNC,fINC,**kwargs):
     alpha    = kappa*dt/dx**2
     print('[diffusion_solve]: alpha = %13.5e' % (alpha))
     print('[diffusion_solve]: N     = %7i' % (N))
-    y        = fINT(x,t,alpha,fBNC,fINC)
+    y = fINT(x,t,alpha,fBNC,fINC)
     return x,t,y
