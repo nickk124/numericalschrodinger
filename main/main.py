@@ -46,7 +46,7 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
-        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0) 
+        psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0)
     elif solver == 'CFFT':
         if psi_0.size > J:
             psi_0 = psi_0[1:J+1].copy()
@@ -67,7 +67,9 @@ def main():
                         help="potentials:\n"
                              "    free    : constant potential\n"
                              "    infwell : infinite square well\n"
-                             "    barrier : well with barrier at center")
+                             "    finwell : finite square well\n"
+                             "    barrier : well with barrier at center"
+                             "    harmonic : harmonic oscillator")
 
     # -----------------------------------------------------
     args         = parser.parse_args()
@@ -82,8 +84,10 @@ def main():
     psi = abs(psi)
     print(psi)
 
-    #ut._3DPlot(psi, x, t)
-    ut.animPlot(psi, x, t)
+    V = ut.initPotential(potential, x)
+
+    #ut._3DPlot(psi, x, t, V)
+    ut.animPlot(psi, x, t, V)
 
 # --------------------------------------------------
 main()
