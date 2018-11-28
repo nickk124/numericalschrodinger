@@ -42,7 +42,7 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     t = np.arange(0, N, dt)
 
     psi_0 = np.zeros(J+2) # Initial guess for psi
-    psi_0[1:-1] = ut.fINC(x)
+    psi_0[1:-1] = ut.fINC(potential, x)
     psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
@@ -68,7 +68,7 @@ def main():
                              "    free    : constant potential\n"
                              "    infwell : infinite square well\n"
                              "    finwell : finite square well\n"
-                             "    barrier : well with barrier at center"
+                             "    barrier : well with barrier at center\n"
                              "    harmonic : harmonic oscillator")
 
     # -----------------------------------------------------
@@ -78,16 +78,14 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    N = 1e3 # Use 1000 time support points
+    N = 1e4 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
     psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
-    psi = abs(psi)
-    print(psi)
 
     V = ut.initPotential(potential, x)
 
     #ut._3DPlot(psi, x, t, V)
-    ut.animPlot(psi, x, t, V)
+    ut.animPlot(psi, x, t, V, analytical = ut.getAnalytical(potential))
 
 # --------------------------------------------------
 main()
