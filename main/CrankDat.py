@@ -45,9 +45,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
         #if k == 0 or k == J-1:
             #b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
 
-    psi[:, 0] = psi_0
-
-
     for k in range(J):
         b[k] += (1 + 2*1.j*q + 1.j*r*V[k])
         if k == 0 or k == J-1:
@@ -65,7 +62,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
         if np.array_equal(psiLast,psi[1:-1, n]):
             print('Tridiag Not Working')
         psi[:,n] = fBNC(potential, psi[:,n-1])
-
 
 #        for j in range(1,J+1,1): # fill y with CN-solved values
 #            psi[j][n+1] = psi_next[j-1]
