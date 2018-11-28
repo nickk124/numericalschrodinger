@@ -42,8 +42,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
         #if k == 0 or k == J-1:
             #b[k] += 2*1.j*q # account for boundary conditions in middle diagonal end terms
 
-    psi[:, 0] = psi_0
-
     rhs = np.zeros(J,dtype=np.complex_) # matrix to store each new RHS term in matrix equation
     # this comes from the mixture of explicit and implicit methods (we need more terms to calculate RHS array vals)
     #for j in range(1, len(psi) - 2): # fill y with initial temperature array, leaving space for boundary conditions
@@ -54,7 +52,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0,m,hbar):
             rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
         psi[1:-1,n] = np.dot(Ainv,rhs) # use tridiag to solve now-implicit equation
         psi[:,n] = fBNC(potential, psi[:,n-1])
-
 
 #        for j in range(1,J+1,1): # fill y with CN-solved values
 #            psi[j][n+1] = psi_next[j-1]
