@@ -27,6 +27,7 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
     #c = a.copy()
     A = np.zeros((J,J),dtype=np.complex_)
     V = ut.initPotential(potential, x)
+    V = np.ones(V.size)
     for i in range(len(A)):
         if i == 0:
             A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
@@ -52,8 +53,8 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
 
     for n in range(1,N):
         for l in range(J): # fill in RHS values for use in tridiag for current iteration
-            rhs[l] = (1.j*q)*(psi[l,n] + psi[l+2,n]) + (1. - (2.*1.j*q) - (1.j*V[l]))*psi[l+1,n] # deleted factor of r
-        psiLast = psi[1:-1, n].copy()
+            rhs[l] = (1.j*q)*(psi[l,n-1] + psi[l+2,n-1]) + (1. - (2.*1.j*q) - (1.j*r*V[l]))*psi[l+1,n-1] # deleted factor of r
+            print(rhs[l])
         psi[1:-1,n] = np.dot(Ainv,rhs)
         psi[:,n] = fBNC(potential, psi[:,n-1])
 
