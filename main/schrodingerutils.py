@@ -7,7 +7,7 @@ import matplotlib.cm as cm
 
 m = 1.0
 hbar = 1.0
-omega = 10
+omega = 100
 # begin with a Gaussian wave-packet
 def fINC(x):
     width = 1/50 # Variance

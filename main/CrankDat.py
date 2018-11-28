@@ -27,7 +27,6 @@ def cranknicholson(x,t,potential,delt,delx,fBNC,psi_0):
     #c = a.copy()
     A = np.zeros((J,J),dtype=np.complex_)
     V = ut.initPotential(potential, x)
-    V = np.ones(V.size)
     for i in range(len(A)):
         if i == 0:
             A[i][i] += (1 + 3*1.j*q + 1.j*r*V[i])
