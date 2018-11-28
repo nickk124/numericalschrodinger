@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 m = 1.0
 hbar = 1.0
 omega = 100
+
 # begin with a Gaussian wave-packet
 def fINC(x):
     width = 1/50 # Variance
@@ -15,11 +16,6 @@ def fINC(x):
     mu = np.mean(x)
     f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     return f
-
-def plot_potential(x, V):
-    plot = plt.figure(figsize=(8,8),dpi=100,facecolor='white')
-    plt.plot(x, V)
-    plt.show()
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
     x = x.copy() #array of x coordinates
