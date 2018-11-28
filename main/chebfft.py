@@ -4,13 +4,14 @@ from scipy import constants
 from scipy import special
 import schrodingerutils as ut
 
+hbar = ut.hbar #sp.constants.hbar
+m = ut.m
 
 class CFFT:
-    def __init__(self, V, dt, dx, m):
+    def __init__(self, V, dt, dx):
         self.V = V
         self.dt = dt
         self.dx = dx
-        self.m = m
 
         Vmin = np.amin(self.V)
         Vmax = np.amax(self.V)
@@ -50,7 +51,6 @@ def DDchi(chi,x): #uses fast fourier transforms to evaluate the second derivativ
     return ddchi #returns array
 
 def Hamiltonian(chi,x,cfft): #for some discretized function chi (array), returns an array of the hamiltonian acting on chi
-    m = cfft.m
     V = cfft.V
     
     return (-1.0 * hbar**2.0 / (2.0*m) )*DDchi(chi,x) + V*chi
@@ -67,7 +67,7 @@ def Hamiltonian(chi,x,cfft): #for some discretized function chi (array), returns
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
 #schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
-def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
+def chebyshev_fft(x,t,potential,psi_0,fBNC,**kwargs):
     print("running CFFT solver")
 
     J = len(x)
@@ -87,7 +87,7 @@ def chebyshev_fft(x,t,potential,psi_0,m,fBNC,**kwargs):
     dt = np.abs(t[1] - t[0])
 
     V = ut.initPotential(potential, x)
-    cfft = CFFT(V, dt, dx, m)
+    cfft = CFFT(V, dt, dx)
 
     a = np.zeros(sumcount, dtype=np.complex_) #list of a_n (see equation 8)
 
