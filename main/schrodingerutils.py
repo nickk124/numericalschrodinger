@@ -7,8 +7,8 @@ import matplotlib.cm as cm
 import scipy as sp
 from scipy import constants
 
-m = 1.0e-31 # approx mass of an e-
-hbar = sp.constants.hbar # use hbar constant value from scipy
+m = 1.0 # approx mass of an e-
+hbar = 1.0 # use hbar constant value from scipy
 omega = 100
 
 # begin with a Gaussian wave-packet
