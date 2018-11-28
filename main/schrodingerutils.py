@@ -22,7 +22,7 @@ def fINC(name, x):
         f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     elif name == 'infwell':
         a = 1
-        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a)
+        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
     elif name == 'finwell':
         L = x[3*J//4] - x[J//4] # Size of the well
         A = 0.05 # Random guesses at parameters
@@ -42,10 +42,8 @@ def fINC(name, x):
     elif name == 'harmonic':
         f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
 
-        pass
-
-    plt.plot(x, f)
-    plt.show()
+    #plt.plot(x, f)
+    #plt.show()
     return f
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
@@ -63,15 +61,100 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
         V = 0.5*m*omega*(x-np.mean(x))**2
     return V
 
-def analytical(name, x, t):
-    if name=='free':
-        return np.exp(1j*(x-t)) # How to add wavenumber and frequency?
-    elif name=='infwell':
-        a = X/h # Width of the box
-        return np.sqrt(2/a)*np.sin(np.pi*x/a)
+### Analytical solutions for the potentials that have them and a getter =============
+def getAnalytical(potential):
+    if potential == 'free':
+        return freeParticle
+    elif potential == 'infwell':
+        return None
+    elif potential == 'finwell':
+        return None
+    elif potential == 'harmonic':
+        return None
     else:
-         return 0 # Analytical solution unknown
+        return None
 
+def freeParticle(x, t):
+    J = len(x); N = len(t)
+    psi = np.zeros((J, N), dtype = np.complex_)
+    for j in range(J):
+        for n in range(N):
+            psi[j, n] = np.exp(1j*(x[j]-t[n]))
+    return psi
+
+def infiniteWell(x, t):
+    J = len(x); N = len(t)
+    a = 1 # Not sure this constant matters
+    psi = np.zeros((J, N), dtype = np.complex_)
+    for j in range(J):
+        for n in range(N):
+            np.sqrt(2/a)*np.sin(np.pi*x[j]/a)
+
+def finiteWell(x, t):
+    return 0
+
+def harmonic(x, t):
+    return 0
+
+#====================================================================================
+
+
+def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
+    plotnum = 211
+    potPlotnum = 212
+    if analytical != None:
+        plotnum = 311
+        potPlotnum = 313
+
+    fig = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
+
+    psiReal = abs(psi.real)
+    psiComplex = abs(psi.imag)
+    numPlot = fig.add_subplot(plotnum)
+
+    def animateNumerical(i): # Takes the interval number as input: used to index values
+        psiRealVal = psiReal[:, i]
+        psiComplexVal = psiComplex[:, i]
+        numPlot.clear()
+        numPlot.plot(x, psiRealVal, label='Real component of $\Psi$')
+        numPlot.plot(x, psiComplexVal, label='Imaginary component of $\Psi$')
+        numPlot.set_title('t = ' + str(round(t[i], 2)))
+        numPlot.set_xlabel('x')
+        numPlot.set_ylabel('Numerical $\Psi$')
+        numPlot.set_ylim([np.min(psiReal),np.max(psiReal)])
+        numPlot.set_xlim([x[0], x[-1]])
+        numPlot.legend(loc=1)
+
+    numAni = animation.FuncAnimation(fig, animateNumerical, interval=1)
+
+    # If known, show analytical plot
+    if analytical != None:
+        truePlot = fig.add_subplot(312)
+        psiTrue = analytical(x, t)
+        realTrue = abs(psiTrue.real)
+        complexTrue = abs(psiTrue.imag)
+
+        def animateTrue(i): # Takes the interval number as input: used to index values
+            realTrueVal = realTrue[:, i]
+            complexTrueVal = complexTrue[:, i]
+            truePlot.clear()
+            truePlot.plot(x, realTrueVal,label='Real component of $\Psi$')
+            truePlot.plot(x, complexTrueVal,label='Imaginary component of $\Psi$')
+            truePlot.set_title('t = ' + str(round(t[i], 2)))
+            truePlot.set_xlabel('x')
+            truePlot.set_ylabel('Analytical $\Psi$')
+            truePlot.set_ylim([np.min(psi),np.max(psi)])
+            truePlot.set_xlim([x[0], x[-1]])
+            truePlot.legend(loc=1)
+
+        trueAni = animation.FuncAnimation(fig, animateTrue, interval=1)
+
+    pot = fig.add_subplot(potPlotnum)
+    pot.plot(x, V)
+    pot.set_xlabel('x')
+    pot.set_ylabel('V')
+    pot.set_xlim([x[0], x[-1]])
+    plt.show()
 
 def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
     h = x[1]-x[0] # Distance between support points
@@ -101,54 +184,3 @@ def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D
 
     plt.show()
     #IDEA: add support for colored display of wavefunction phase
-
-def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
-    plotnum = 211
-    potPlotnum = 212
-    if analytical != None:
-        plotnum = 221
-        potPlotnum = 222
-
-    fig = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
-    numPlot = fig.add_subplot(plotnum)
-    maxVal = np.max(psi)
-
-    def animateNumerical(i): # Takes the interval number as input: used to index values
-        psiVal = psi[:, i]
-        time = t[i]
-        numPlot.clear()
-        numPlot.plot(x, psiVal)
-        numPlot.set_title('t = ' + str(round(t[i], 2)))
-        numPlot.set_xlabel('x')
-        numPlot.set_ylabel('Numerical $\Psi$')
-        numPlot.set_ylim([0,maxVal])
-
-        #numPlot.set_ylim(maxVal)
-
-    ani = animation.FuncAnimation(fig, animateNumerical, interval=1)
-
-    # If known, show analytical plot
-    if analytical != None:
-        truePlot = fig.add_subplot(122)
-
-        def animateTrue(i): # Takes the interval number as input: used to index values
-            psiVal = analytical[:, i]
-            time = t[i]
-            truePlot.clear()
-            truePlot.plot(x, psiVal)
-            truePlot.set_title('t = ' + str(round(t[i], 2)))
-            truePlot.set_xlabel('x')
-            truePlot.set_ylabel('$\Psi$')
-            truePlot.set_ylim([0,maxVal])
-
-        plt.xlabel('x')
-        plt.ylabel('Analytical $\Psi$')
-        ani = animation.FuncAnimation(fig, animateTrue, interval=1)
-
-    pot = fig.add_subplot(potPlotnum)
-    pot.plot(x, V)
-    pot.set_xlabel('x')
-    pot.set_ylabel('V')
-
-    plt.tight_layout()
-    plt.show()
