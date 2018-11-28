@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
+import scipy as sp
+from scipy import constants
 
 m = 1.0
 hbar = 1.0
 k = 1.0
-omega = np.sqrt(k/m)
+omega = np.sqrt(k/m) # frequency for harmonic oscillator
 
 # Sets up the initial conditions for each potential configuration
 def fINC(name, x):
@@ -23,7 +25,7 @@ def fINC(name, x):
         f = np.sqrt(2/a)*np.sin(3*np.pi*x/a)
     elif name == 'finwell':
         L = x[3*J//4] - x[J//4] # Size of the well
-        A = 0.05
+        A = 0.05 # Random guesses at parameters
         B = 0.5
         C = 1
         alpha = k*np.tan(k*L/2)
@@ -55,8 +57,8 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     elif name == 'barrier':
         V[J//2-4:J//2+4] = 100 # Place a big barrier in the center of the well
     elif name == 'finwell':
-        V[0:J//4] = 2
-        V[3*J//4:] = 2
+        V[0:J//4] = 500
+        V[3*J//4:] = 500
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
     return V
