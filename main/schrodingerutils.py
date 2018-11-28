@@ -7,8 +7,8 @@ import matplotlib.cm as cm
 import scipy as sp
 from scipy import constants
 
-m = 1.0e-31 # approx mass of an e-
-hbar = sp.constants.hbar # use hbar constant value from scipy
+m = 1. # approx mass of an e-
+hbar = 1. # use hbar constant value from scipy
 omega = 100
 
 # begin with a Gaussian wave-packet
@@ -28,8 +28,8 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     elif name == 'barrier':
         V[J//2] = 100 # Place a big ass barrier in the center of the well
     elif name == 'finwell':
-        V[0:J//4] = 2
-        V[3*J//4:] = 2
+        V[0:J//4] = 500
+        V[3*J//4:] = 500
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
     return V
