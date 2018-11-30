@@ -13,14 +13,14 @@ m = ut.m
 def boundary(potential, u):
     J = len(u)-2
     # For now, all of the boundaries are the same and simple
-    if potential == 'free' or potential == 'barrier':
+    if potential == 'free':
         # Periodic boundary condition: let the wave travel through the boundary unchanged
         # We should stop the simulation when the wave reaches the boundary
         # This is way more confusing than intended, so leaving for now
         # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
         u[0] = u[-2]
         u[-1] = u[1]
-    elif potential == 'infwell':
+    elif potential == 'infwell' or potential == 'barrier':
         # Reflective conditions: ghost cell values are simply those of the nearest real cell
         # such that du/dx = 0 at ends
         # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
@@ -68,7 +68,7 @@ def main():
                              "    free    : constant potential\n"
                              "    infwell : infinite square well\n"
                              "    finwell : finite square well\n"
-                             "    barrier : well with barrier at center"
+                             "    barrier : well with barrier at center\n"
                              "    harmonic : harmonic oscillator")
 
     # -----------------------------------------------------
@@ -78,10 +78,9 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    N = 1e4 # Use 1000 time support points
+    N = 1e3 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
     psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
-    psi = abs(psi)
 
     V = ut.initPotential(potential, x)
 
