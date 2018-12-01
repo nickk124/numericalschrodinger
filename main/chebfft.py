@@ -124,7 +124,7 @@ def chebyshev_fft(x,t,potential,fBNC, psi_0,**kwargs):
         for n in range(sumcount):
             Psi[1:-1,time] += a[n]*Phi(x,n,Hamiltonian,Psi[1:J+1,time-1], cfft)
 
-        Psi[:,time] = fBNC(potential, Psi[:,time])
+        Psi[:,time] = fBNC(potential, Psi[:,time], Psi[:,time-1])
 
 
     return Psi[1:J+1,:]

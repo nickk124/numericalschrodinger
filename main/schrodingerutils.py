@@ -18,9 +18,9 @@ k = 1e-20 # Just guessing here at the wavenumber
 omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
-def fINC(potential, psi0_name, x):
+def fINC(potential,psi0_name,x):
     J = len(x)
-    mu = np.mean(x)
+    mu = 0.5
     if potential == 'free':
         if psi0_name == 'wavepacket':
             width = 1/50 # Variance
@@ -58,7 +58,10 @@ def fINC(potential, psi0_name, x):
             return f
     elif potential == 'hydrogen':
         if psi0_name == 'groundstate':
-            f = (1/np.sqrt(np.pi*pow(a_0,3)))*np.exp(-x/a_0)
+            width = 1/50
+            a = 1/(width*np.sqrt(2*np.pi))
+            mu = 0.05
+            f = a*np.exp(-.5*pow(((x-mu)/width), 2))
             return f
     raise ValueError('Starting state ' + psi0_name + ' not available for potential ' + potential)
 
@@ -77,8 +80,7 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
     elif name == 'hydrogen':
-        V[0] = 10000
-        V[1:] = -pow(e,2)/(4*np.pi*x[1:])
+        V[1:] = -100*pow(e,2)/(4*np.pi*x[1:])
     return V
 
 ### Analytical solutions for the potentials that have them and a getter =============
@@ -118,7 +120,6 @@ def harmonic(x, t):
 
 #====================================================================================
 
-
 def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
     plotnum = 211
     potPlotnum = 212
@@ -142,7 +143,7 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
         numPlot.set_xlabel('x')
         numPlot.set_ylabel('Numerical $\Psi$')
         numPlot.set_ylim([np.min(psiReal),np.max(psiReal)])
-        numPlot.set_xlim([x[0], x[-1]])
+        numPlot.set_xlim([0, 1])
         numPlot.legend(loc=1)
 
     numAni = animation.FuncAnimation(fig, animateNumerical, interval=1)
@@ -164,7 +165,7 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
             truePlot.set_xlabel('x')
             truePlot.set_ylabel('Analytical $\Psi$')
             truePlot.set_ylim([np.min(psi),np.max(psi)])
-            truePlot.set_xlim([x[0], x[-1]])
+            truePlot.set_xlim([0, 1])
             truePlot.legend(loc=1)
 
         trueAni = animation.FuncAnimation(fig, animateTrue, interval=1)
@@ -173,31 +174,37 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
     pot.plot(x, V)
     pot.set_xlabel('x')
     pot.set_ylabel('V')
-    pot.set_xlim([x[0], x[-1]])
+    pot.set_xlim([0, 1])
     plt.show()
 
-def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
+def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D, x vs. time vs. psi
     h = x[1]-x[0] # Distance between support points
     X = len(x) # Number of support points
 
-    plotnum = 121
+    plotnum = 211
     if analytical != None:
         plotnum = 221
 
     solutions = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
-    solutions.suptitle('Numerical and Analytical Solutions for ')
     Jmesh, Nmesh = np.meshgrid(t, x)
 
-    approx = solutions.add_subplot(plotnum,projection='3d')
-    approx.plot_surface(Jmesh[1], Nmesh[0],psi,cmap='rainbow')
-    approx.set_zlabel('$\Psi$')
-    approx.set_ylabel('t')
-    approx.set_xlabel('x')
+    approxReal = solutions.add_subplot(plotnum,projection='3d')
+    approxReal.plot_surface(Nmesh, Jmesh,psi.real,cmap='rainbow')
+    approxReal.set_zlabel('$\Psi$')
+    approxReal.set_ylabel('t')
+    approxReal.set_xlabel('x')
+    approxReal.set_title('Real component of $\Psi$')
 
+    approxImag = solutions.add_subplot(plotnum+1,projection='3d')
+    approxImag.plot_surface(Nmesh, Jmesh,psi.imag,cmap='rainbow')
+    approxImag.set_zlabel('$\Psi$')
+    approxImag.set_ylabel('t')
+    approxImag.set_xlabel('x')
+    approxImag.set_title('Imaginary Component of $\Psi$')
 
     if analytical != None:
         true = fig.add_subplot(122, projection='3d')
-        true.plot_surface(Jmesh[1], Nmesh[0],anal,cmap='rainbow')
+        true.plot_surface(Jmesh, Nmesh,anal.real,cmap='rainbow')
         true.set_zlabel('$\Psi$')
         true.set_ylabel('t')
         true.set_xlabel('x')
