@@ -52,7 +52,7 @@ def DDchi(chi,x): #uses fast fourier transforms to evaluate the second derivativ
 
 def Hamiltonian(chi,x,cfft): #for some discretized function chi (array), returns an array of the hamiltonian acting on chi
     V = cfft.V
-    
+
     return (-1.0 * hbar**2.0 / (2.0*m) )*DDchi(chi,x) + V*chi
     #numpy array element-wise arithmetic is wonderful
 
@@ -67,7 +67,7 @@ def Hamiltonian(chi,x,cfft): #for some discretized function chi (array), returns
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
 #schrodinger_solve(potential, psi_0, solver, J, xbounds, dt, FBNC):
-def chebyshev_fft(x,t,potential,psi_0,fBNC,**kwargs):
+def chebyshev_fft(x,t,potential,fBNC, psi_0,**kwargs):
     print("running CFFT solver")
 
     J = len(x)
@@ -76,12 +76,9 @@ def chebyshev_fft(x,t,potential,psi_0,fBNC,**kwargs):
     #psi = psi_0
     # need to apply boundary conditions for psi_0!!! dependent on potential
     Psi = np.zeros((J+2,N), dtype=np.complex_)
-    Psi[1:J+1,0] = psi_0
+    Psi[:,0] = psi_0
 
-    sumcount = 10 # pre-chosen amount of terms to do in summation (equation 8 in the paper)
-    for key in kwargs:
-        if (key=='sumcount'):
-            sumcount = kwargs[key]
+    sumcount = kwargs.pop('sumcount', 10) # pre-chosen amount of terms to do in summation (equation 8 in the paper)
 
     dx = np.abs(x[1] - x[0])
     dt = np.abs(t[1] - t[0])
@@ -98,22 +95,27 @@ def chebyshev_fft(x,t,potential,psi_0,fBNC,**kwargs):
     for n in range(sumcount):
         a[n] = np.exp( (-1.j*(deltaE + Emin)*dt) / hbar) * D(n) * JBess(n,cfft)
 
-
     for time in range(1,N):
-        psi_old = Psi[:,time-1].copy() #these psi vectors are of size psi
-        # need to apply boundary conditions
-        psi_new = fBNC(potential, psi_old).copy()
+        ''' # Nick's original code.  Didn't want to delete but can be done in 3 lines (below)
+        psi_old = Psi[:,time-1] #these psi vectors are of size psi
+        # need to apply boundary
+        psi_new = fBNC(potential, psi_old)
 
         psi_new_inner = np.zeros(J, dtype=np.complex_)
 
         for n in range(sumcount):
             psi_new_inner += a[n]*Phi(x,n,Hamiltonian,psi_old[1:J+1], cfft)
 
-        psi_new[1:J+1] = psi_new_inner.copy()
+        psi_new[1:J+1] = psi_new_inner
         # now psi_new has boundaries generated from last iteration, and inner points generated for current iteration
 
-        Psi[:,time] = psi_new.copy()
+        Psi[:,time] = psi_new
+        '''
 
-        #print(psi_new)
+        for n in range(sumcount):
+            Psi[1:-1,time] += a[n]*Phi(x,n,Hamiltonian,Psi[1:J+1,time-1], cfft)
+
+        Psi[:,time] = fBNC(potential, Psi[:,time])
+
 
     return Psi[1:J+1,:]

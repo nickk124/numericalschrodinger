@@ -13,14 +13,14 @@ m = ut.m
 def boundary(potential, u):
     J = len(u)-2
     # For now, all of the boundaries are the same and simple
-    if potential == 'free' or potential == 'barrier':
+    if potential == 'free':
         # Periodic boundary condition: let the wave travel through the boundary unchanged
         # We should stop the simulation when the wave reaches the boundary
         # This is way more confusing than intended, so leaving for now
         # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
         u[0] = u[-2]
         u[-1] = u[1]
-    elif potential == 'infwell':
+    elif potential == 'infwell' or potential == 'barrier':
         # Reflective conditions: ghost cell values are simply those of the nearest real cell
         # such that du/dx = 0 at ends
         # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
@@ -48,9 +48,7 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     if solver == 'CN':
         psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0)
     elif solver == 'CFFT':
-        if psi_0.size > J:
-            psi_0 = psi_0[1:J+1].copy()
-        psi = cf.chebyshev_fft(x,t,potential,psi_0,fBNC,sumcount = 10)
+        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0, sumcount = 10)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
@@ -78,14 +76,14 @@ def main():
     solver       = args.solver
     potential    = args.potential
 
-    N = 1e4 # Use 1000 time support points
+    N = 1e3 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
     psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
 
     V = ut.initPotential(potential, x)
 
     #ut._3DPlot(psi, x, t, V)
-    ut.animPlot(psi, x, t, V, analytical = ut.getAnalytical(potential))
+    ut.animPlot(psi, x, t, V)
 
 # --------------------------------------------------
 main()
