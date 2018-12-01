@@ -13,34 +13,39 @@ k = 1e-20
 omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
-def fINC(name, x):
+def fINC(name, psi0_name, x):
     J = len(x)
     mu = np.mean(x)
     if name == 'free':
-        width = 1/50 # Variance
-        a = 1/(width*np.sqrt(2*np.pi))
-        f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+        if psi0_name == 'wavepacket':
+            width = 1/50 # Variance
+            a = 1/(width*np.sqrt(2*np.pi))
+            f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     elif name == 'infwell':
-        a = 1
-        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
+        if psi0_name == "groundstate":
+            a = 1
+            f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
     elif name == 'finwell':
-        L = x[3*J//4] - x[J//4] # Size of the well
-        A = 0.05 # Random guesses at parameters
-        B = 0.5
-        C = 1
-        alpha = k*np.tan(k*L/2)
-        # Outside the well, decaying exponential
-        f = np.zeros(J)
-        f[0:J//4] = A*np.exp(-alpha*(mu - x[0:J//4]))
-        f[3*J//4] = B*np.exp(alpha*(mu - x[3*J//4]))
-        f[J//4:3*J//4] = C*np.cos(k*(mu - x[J//4:3*J//4]))
+        if psi0_name == "boundstate":
+            L = x[3*J//4] - x[J//4] # Size of the well
+            A = 0.05 # Random guesses at parameters
+            B = 0.5
+            C = 1
+            alpha = k*np.tan(k*L/2)
+            # Outside the well, decaying exponential
+            f = np.zeros(J)
+            f[0:J//4] = A*np.exp(-alpha*(mu - x[0:J//4]))
+            f[3*J//4] = B*np.exp(alpha*(mu - x[3*J//4]))
+            f[J//4:3*J//4] = C*np.cos(k*(mu - x[J//4:3*J//4]))
     elif name == 'barrier': # Gaussian on the left side of the barrier
-        width = 1/50
-        a = 1/(width*np.sqrt(2*np.pi))
-        mu = x[J//4]
-        f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+        if psi0_name == "wavepacket":
+            width = 1/50
+            a = 1/(width*np.sqrt(2*np.pi))
+            mu = x[J//4]
+            f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     elif name == 'harmonic':
-        f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
+        if psi0_name == "groundstate":
+            f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
 
     #plt.plot(x, f)
     #plt.show()

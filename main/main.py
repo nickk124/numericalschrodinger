@@ -36,13 +36,13 @@ def boundary(potential, u):
 # dt        float               time step
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
-def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
+def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC):
     dx = (xbounds[-1]-xbounds[0])/J
     x = np.arange(xbounds[0], J*dx, dx) #array of x coordinates
     t = np.arange(0, N, dt)
 
     psi_0 = np.zeros(J+2) # Initial guess for psi
-    psi_0[1:-1] = ut.fINC(potential, x)
+    psi_0[1:-1] = ut.fINC(potential,psi0_name, x)
     psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
@@ -58,7 +58,7 @@ def main():
     parser.add_argument("dt",type=float,
                         help="timestep")
     parser.add_argument("solver",type=str,
-                        help="diffusion equation solver:\n"
+                        help="schrodinger equation solver:\n"
                              "    CN      : Crank-Nicholson\n"
                              "    CFFT    : Chebyshev-FFT")
     parser.add_argument("potential",type=str,
@@ -68,6 +68,11 @@ def main():
                              "    finwell : finite square well\n"
                              "    barrier : well with barrier at center\n"
                              "    harmonic : harmonic oscillator")
+    parser.add_argument("initial",type=str,
+                    help="initial wavefunction:\n"
+                            "    groundstate   : ground state\n"
+                            "    boundstate    : bound state\n"
+                            "    wavepacket    : Chebyshev-FFT")
 
     # -----------------------------------------------------
     args         = parser.parse_args()
@@ -75,10 +80,11 @@ def main():
     dt           = args.dt
     solver       = args.solver
     potential    = args.potential
+    psi0_name    = args.initial
 
     N = 1e3 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
-    psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
+    psi, x, t = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
 
     V = ut.initPotential(potential, x)
 
