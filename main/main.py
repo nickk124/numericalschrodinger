@@ -13,7 +13,7 @@ m = ut.m
 def boundary(potential, u):
     J = len(u)-2
     # For now, all of the boundaries are the same and simple
-    if potential == 'free':
+    if potential == 'free' or potential == 'harmonic':
         # Periodic boundary condition: let the wave travel through the boundary unchanged
         # We should stop the simulation when the wave reaches the boundary
         # This is way more confusing than intended, so leaving for now
@@ -26,6 +26,10 @@ def boundary(potential, u):
         # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
         u[0] = u[1]
         u[-1] = u[-2]
+    elif potential == 'hydrogen':
+        u[0] = u[1] # Reflective boundary at r = 0 (positive radius only)
+        u[-1] = [1] # Periodic condition for positive limit
+
     return u
 
 # name      type                explanation
@@ -67,7 +71,8 @@ def main():
                              "    infwell : infinite square well\n"
                              "    finwell : finite square well\n"
                              "    barrier : well with barrier at center\n"
-                             "    harmonic : harmonic oscillator")
+                             "    harmonic : harmonic oscillator\n"
+                             "    hydrogen : radial component of hydrogen atom")
 
     # -----------------------------------------------------
     args         = parser.parse_args()

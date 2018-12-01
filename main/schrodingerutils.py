@@ -8,8 +8,12 @@ import scipy as sp
 from scipy import constants
 
 m = 1e-31 # approx mass of an e-
+e = 1.60218e-19 # Charge of e-
+
+e_0 = sp.constants.epsilon_0
 hbar = sp.constants.hbar # use hbar constant value from scipy
 k = 1e-20
+
 omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
@@ -41,7 +45,6 @@ def fINC(name, x):
         f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     elif name == 'harmonic':
         f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
-
     #plt.plot(x, f)
     #plt.show()
     return f
@@ -53,12 +56,16 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     if name == 'free' or name == 'infwell': #free particle
         pass
     elif name == 'barrier':
+        # Value of the barrier was chosen to allow a tiny bit of tunneling
         V[J//2-4:J//2+4] = 3e-34 # Place a big barrier in the center of the well
     elif name == 'finwell':
         V[0:J//4] = 1e-34
         V[3*J//4:] = 1e-34
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
+    elif name == 'hydrogen':
+        V[0] = 10000
+        V[1:] = -pow(e,2)/(4*np.pi*x[1:])
     return V
 
 ### Analytical solutions for the potentials that have them and a getter =============
