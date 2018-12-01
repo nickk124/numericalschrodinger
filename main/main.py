@@ -48,9 +48,7 @@ def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
     if solver == 'CN':
         psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0)
     elif solver == 'CFFT':
-        if psi_0.size > J:
-            psi_0 = psi_0[1:J+1].copy()
-        psi = cf.chebyshev_fft(x,t,potential,psi_0,fBNC,sumcount = 10)
+        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0, sumcount = 10)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
