@@ -11,6 +11,7 @@ hbar = ut.hbar
 m = ut.m
 
 def boundary(potential, u):
+    print(dt)
     J = len(u)-2
     # For now, all of the boundaries are the same and simple
     if potential == 'free' or potential == 'harmonic':
@@ -20,6 +21,7 @@ def boundary(potential, u):
         # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
         u[0] = u[-2]
         u[-1] = u[1]
+        #   u[-1] = u[-1] -
     elif potential == 'infwell' or potential == 'barrier':
         # Reflective conditions: ghost cell values are simply those of the nearest real cell
         # such that du/dx = 0 at ends
@@ -28,7 +30,7 @@ def boundary(potential, u):
         u[-1] = u[-2]
     elif potential == 'hydrogen':
         u[0] = u[1] # Reflective boundary at r = 0 (positive radius only)
-        u[-1] = [1] # Periodic condition for positive limit
+        u[-1] = u[1] # Periodic condition for positive limit
 
     return u
 
@@ -40,19 +42,19 @@ def boundary(potential, u):
 # dt        float               time step
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
-def schrodinger_solve(potential,solver,J,N,xbounds,dt,fBNC):
+def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC):
     dx = (xbounds[-1]-xbounds[0])/J
     x = np.arange(xbounds[0], J*dx, dx) #array of x coordinates
     t = np.arange(0, N, dt)
 
     psi_0 = np.zeros(J+2) # Initial guess for psi
-    psi_0[1:-1] = ut.fINC(potential, x)
+    psi_0[1:-1] = ut.fINC(potential,psi0_name, x)
     psi_0 = fBNC(potential, psi_0)
 
     if solver == 'CN':
         psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0)
     elif solver == 'CFFT':
-        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0, sumcount = 10)
+        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0, sumcount = 5)
     return psi, x, t # returned psi is a J by N array of the wavefunction
 
 def main():
@@ -62,7 +64,7 @@ def main():
     parser.add_argument("dt",type=float,
                         help="timestep")
     parser.add_argument("solver",type=str,
-                        help="diffusion equation solver:\n"
+                        help="schrodinger equation solver:\n"
                              "    CN      : Crank-Nicholson\n"
                              "    CFFT    : Chebyshev-FFT")
     parser.add_argument("potential",type=str,
@@ -72,7 +74,13 @@ def main():
                              "    finwell : finite square well\n"
                              "    barrier : well with barrier at center\n"
                              "    harmonic : harmonic oscillator\n"
-                             "    hydrogen : radial component of hydrogen atom")
+                             "    hydrogen : radial component of hydrgoen atom")
+
+    parser.add_argument("initial",type=str,
+                    help="initial wavefunction:\n"
+                            "    groundstate   : ground state\n"
+                            "    boundstate    : bound state\n"
+                            "    wavepacket    : Chebyshev-FFT")
 
     # -----------------------------------------------------
     args         = parser.parse_args()
@@ -80,10 +88,11 @@ def main():
     dt           = args.dt
     solver       = args.solver
     potential    = args.potential
+    psi0_name    = args.initial
 
     N = 1e3 # Use 1000 time support points
     xbounds = [0,1] # Say we're looking only at the interval [0,1]
-    psi, x, t = schrodinger_solve(potential,solver,J,N,xbounds,dt,boundary)
+    psi, x, t = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
 
     V = ut.initPotential(potential, x)
 
