@@ -8,8 +8,8 @@ import scipy as sp
 from scipy import constants
 
 m = 1e-31 # approx mass of an e-
-e = 1.60218e-19 # Charge of e-
-a_0 = 5.29177e-11 # Bohr radius
+e = 1e-19 # Charge of e-
+a_0 = 0.29177 # Bohr radius
 
 e_0 = sp.constants.epsilon_0
 hbar = sp.constants.hbar # use hbar constant value from scipy
@@ -58,10 +58,7 @@ def fINC(potential,psi0_name,x):
             return f
     elif potential == 'hydrogen':
         if psi0_name == 'groundstate':
-            width = 1/50
-            a = 1/(width*np.sqrt(2*np.pi))
-            mu = 0.05
-            f = a*np.exp(-.5*pow(((x-mu)/width), 2))
+            f = (1/np.sqrt(np.pi*pow(a_0,3)))*np.exp(-x/a_0)
             return f
     raise ValueError('Starting state ' + psi0_name + ' not available for potential ' + potential)
 
@@ -80,7 +77,7 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     elif name == 'harmonic':
         V = 0.5*m*omega*(x-np.mean(x))**2
     elif name == 'hydrogen':
-        V[1:] = -100*pow(e,2)/(4*np.pi*x[1:])
+        V[1:] = -pow(e,2)/(4*np.pi*e_0*x[1:])
     return V
 
 ### Analytical solutions for the potentials that have them and a getter =============

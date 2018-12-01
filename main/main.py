@@ -102,11 +102,15 @@ def main():
         xbounds = [0, 10]
     elif potential == 'free' or potential == 'harmonic':
         xbounds = [-10, 10]
+    Jorig = J
     J *= (xbounds[-1] - xbounds[0])
 
     psi, x, t = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
-
     V = ut.initPotential(potential, x)
+    if (potential == 'hydrogen'):
+        psi = psi[0:Jorig,:]
+    elif potential == 'free':
+        psi = psi[J//2-Jorig//2 : J//2 + Jorig//2, :]
 
     ut._3DPlot(psi, x, t, V)
     ut.animPlot(psi, x, t, V)
