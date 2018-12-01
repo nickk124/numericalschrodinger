@@ -100,18 +100,20 @@ def chebyshev_fft(x,t,potential,psi_0,fBNC,**kwargs):
 
 
     for time in range(1,N):
-        psi_old = Psi[:,time-1] #these psi vectors are of size psi
+        psi_old = Psi[:,time-1].copy() #these psi vectors are of size psi
         # need to apply boundary conditions
-        psi_new = fBNC(potential, psi_old)
+        psi_new = fBNC(potential, psi_old).copy()
 
         psi_new_inner = np.zeros(J, dtype=np.complex_)
 
         for n in range(sumcount):
             psi_new_inner += a[n]*Phi(x,n,Hamiltonian,psi_old[1:J+1], cfft)
 
-        psi_new[1:J+1] = psi_new_inner
+        psi_new[1:J+1] = psi_new_inner.copy()
         # now psi_new has boundaries generated from last iteration, and inner points generated for current iteration
 
-        Psi[:,time] = psi_new
+        Psi[:,time] = psi_new.copy()
+
+        #print(psi_new)
 
     return Psi[1:J+1,:]

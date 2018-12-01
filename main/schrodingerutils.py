@@ -7,8 +7,8 @@ import matplotlib.cm as cm
 import scipy as sp
 from scipy import constants
 
-m = 1.0e-31 # approx mass of an e-
-hbar = sp.constants.hbar # use hbar constant value from scipy
+m = 1.0 
+hbar = 1.0 
 omega = 100
 
 # Sets up the initial conditions for each potential configuration
@@ -21,7 +21,7 @@ def fINC(name, x):
         f = a*np.exp(-.5*pow(((x-mu)/width), 2))
     elif name == 'infwell':
         a = 1
-        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
+        f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic stationary eigenstate
     elif name == 'finwell':
         L = x[3*J//4] - x[J//4] # Size of the well
         A = 0.05 # Random guesses at parameters
