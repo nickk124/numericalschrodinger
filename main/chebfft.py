@@ -6,6 +6,7 @@ import schrodingerutils as ut
 
 hbar = ut.hbar #sp.constants.hbar
 m = ut.m
+e = ut.e
 
 class CFFT:
     def __init__(self, V, dt, dx):
@@ -55,6 +56,14 @@ def Hamiltonian(chi,x,cfft): #for some discretized function chi (array), returns
 
     return (-1.0 * hbar**2.0 / (2.0*m) )*DDchi(chi,x) + V*chi
     #numpy array element-wise arithmetic is wonderful
+
+# Stability criteria outlined at the end of the VT paper
+def isStable():
+    M = 1 # This is introduced as the number of complex roots of the Pade approximant
+    # Is this just equivalent to sumcount??? Or is it 1?  Trials suggest that it should scale
+    h = scipy.constants.h
+    v = hbar*cfft.dt/(2*m*cfft.dc**2) # Equation 4.6
+
 
 
 # name      type                explanation
@@ -115,7 +124,7 @@ def chebyshev_fft(x,t,potential,fBNC, psi_0,**kwargs):
         for n in range(sumcount):
             Psi[1:-1,time] += a[n]*Phi(x,n,Hamiltonian,Psi[1:J+1,time-1], cfft)
 
-        Psi[:,time] = fBNC(potential, Psi[:,time])
+        Psi[:,time] = fBNC(potential, Psi[:,time], Psi[:,time-1])
 
 
     return Psi[1:J+1,:]

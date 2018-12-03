@@ -9,15 +9,18 @@ import schrodingerutils as ut
 
 hbar = ut.hbar
 m = ut.m
+dx = 1000
+dt = 1000
 
-def boundary(potential, u):
+def boundary(potential,u,u_last):
     J = len(u)-2
+    deltak = 1e-21
+    c = (np.sqrt((ut.k+deltak)/deltak) - np.sqrt(ut.k))/deltak
     # For now, all of the boundaries are the same and simple
-    if potential == 'free':
-        # Periodic boundary condition: let the wave travel through the boundary unchanged
-        # We should stop the simulation when the wave reaches the boundary
-        # This is way more confusing than intended, so leaving for now
-        # https://www.asc.tuwien.ac.at/~arnold/pdf/graz/graz.pdf
+    if potential == 'free' or potential == 'harmonic':
+        # Initially we wanted to use open boundary conditions but these require we
+        # know the speed of the wave, which would have been difficult to implement
+        # Instead, these are periodic
         u[0] = u[-2]
         u[-1] = u[1]
     elif potential == 'infwell' or potential == 'barrier':
@@ -26,6 +29,9 @@ def boundary(potential, u):
         # http://hplgit.github.io/INF5620/doc/pub/sphinx-wave/._main_wave003.html
         u[0] = u[1]
         u[-1] = u[-2]
+    elif potential == 'hydrogen':
+        u[0] = u[-2]
+        u[-1] = u[1]
     return u
 
 # name      type                explanation
@@ -37,19 +43,21 @@ def boundary(potential, u):
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
 def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC):
-    dx = (xbounds[-1]-xbounds[0])/J
-    x = np.arange(xbounds[0], J*dx, dx) #array of x coordinates
-    t = np.arange(0, N, dt)
 
-    psi_0 = np.zeros(J+2) # Initial guess for psi
+    x = np.linspace(xbounds[0], xbounds[-1], J) #array of x coordinates
+    t = np.arange(0, N, dt)
+    global dx
+    dx = (xbounds[-1]-xbounds[0])/J
+
+    psi_0 = np.zeros(J+2) # Initial guess for
     psi_0[1:-1] = ut.fINC(potential,psi0_name, x)
-    psi_0 = fBNC(potential, psi_0)
+    psi_0 = fBNC(potential, psi_0, psi_0)
 
     if solver == 'CN':
         psi = cn.cranknicholson(x,t,potential,dt,dx,fBNC,psi_0)
     elif solver == 'CFFT':
-        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0, sumcount = 10)
-    return psi, x, t # returned psi is a J by N array of the wavefunction
+        psi = cf.chebyshev_fft(x,t,potential,fBNC,psi_0,sumcount=5)
+    return psi # returned psi is a J by N array of the wavefunction
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -67,7 +75,9 @@ def main():
                              "    infwell : infinite square well\n"
                              "    finwell : finite square well\n"
                              "    barrier : well with barrier at center\n"
-                             "    harmonic : harmonic oscillator")
+                             "    harmonic : harmonic oscillator\n"
+                             "    hydrogen : radial component of hydrgoen atom")
+
     parser.add_argument("initial",type=str,
                     help="initial wavefunction:\n"
                             "    groundstate   : ground state\n"
@@ -75,6 +85,7 @@ def main():
                             "    wavepacket    : Chebyshev-FFT")
 
     # -----------------------------------------------------
+    global dt
     args         = parser.parse_args()
     J            = args.J
     dt           = args.dt
@@ -83,13 +94,34 @@ def main():
     psi0_name    = args.initial
 
     N = 1e3 # Use 1000 time support points
-    xbounds = [0,1] # Say we're looking only at the interval [0,1]
-    psi, x, t = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
+    if potential == 'free': # This one gets boring after the wave dissipates
+        N = 1e2
 
+    xbounds = [0,1] # Say we're looking only at the interval [0,1]
+    if potential == 'hydrogen':
+        xbounds = [0, 10]
+    elif potential == 'free':
+        xbounds = [-10, 10]
+    elif potential == 'harmonic':
+        xbounds = [-1, 1]
+    Jorig = J # The number of support points in the interval [0,1]
+    J *= (xbounds[-1] - xbounds[0]) # The total number of support points (over entire range)
+
+    psi = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
+    if (potential == 'hydrogen'):
+        psi = psi[0:Jorig,:]
+        xbounds = [0,1]
+    elif potential == 'free' or potential == 'harmonic':
+        psi = psi[J//2 - Jorig//2 : J//2 + Jorig//2, :]
+        if potential == 'free':
+            xbounds = [-5,5]
+
+    x = np.linspace(xbounds[0], xbounds[-1], Jorig) # x values in interval [0,1]
+    t = np.arange(0, N, dt)
     V = ut.initPotential(potential, x)
 
-    #ut._3DPlot(psi, x, t, V)
-    ut.animPlot(psi, x, t, V)
+    ut._3DPlot(psi,x,t,xbounds,V)
+    ut.animPlot(psi,x,t,xbounds,V)
 
 # --------------------------------------------------
 main()

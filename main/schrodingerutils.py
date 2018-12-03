@@ -8,27 +8,34 @@ import scipy as sp
 from scipy import constants
 
 m = 1e-31 # approx mass of an e-
+e = 1e-19 # Charge of e-
+a_0 = 0.29177 # Bohr radius (not the true value)
+
+e_0 = sp.constants.epsilon_0
 hbar = sp.constants.hbar # use hbar constant value from scipy
-k = 1e-20
+k = 1e-20 # Just guessing here at the wavenumber
+
 omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
-def fINC(name, psi0_name, x):
+def fINC(potential,psi0_name,x):
     J = len(x)
     mu = np.mean(x)
-    if name == 'free':
+    if potential == 'free':
         if psi0_name == 'wavepacket':
-            width = 1/50 # Variance
+            width = 1/20 # Variance
             a = 1/(width*np.sqrt(2*np.pi))
-            f = a*np.exp(-.5*pow(((x-mu)/width), 2))
-    elif name == 'infwell':
+            f = a*np.exp(-.5*pow((x/width), 2))
+            return f
+    elif potential == 'infwell':
         if psi0_name == "groundstate":
             a = 1
             f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
-    elif name == 'finwell':
+            return f
+    elif potential == 'finwell':
         if psi0_name == "boundstate":
             L = x[3*J//4] - x[J//4] # Size of the well
-            A = 0.05 # Random guesses at parameters
+            A = 0.05 # Random guesses at parameters to make wavefunction continuous
             B = 0.5
             C = 1
             alpha = k*np.tan(k*L/2)
@@ -37,19 +44,26 @@ def fINC(name, psi0_name, x):
             f[0:J//4] = A*np.exp(-alpha*(mu - x[0:J//4]))
             f[3*J//4] = B*np.exp(alpha*(mu - x[3*J//4]))
             f[J//4:3*J//4] = C*np.cos(k*(mu - x[J//4:3*J//4]))
-    elif name == 'barrier': # Gaussian on the left side of the barrier
+            return f
+    elif potential == 'barrier': # Gaussian on the left side of the barrier
         if psi0_name == "wavepacket":
-            width = 1/50
+            width = 1/35
             a = 1/(width*np.sqrt(2*np.pi))
             mu = x[J//4]
             f = a*np.exp(-.5*pow(((x-mu)/width), 2))
-    elif name == 'harmonic':
+            return f
+    elif potential == 'harmonic':
         if psi0_name == "groundstate":
-            f = pow((m*omega/(np.pi*hbar)),.25)*np.exp(-m*omega*pow((x-mu),omega)/(2*hbar))
-
-    #plt.plot(x, f)
-    #plt.show()
-    return f
+            width = 1/20 # Variance
+            a = 1/(width*np.sqrt(2*np.pi))
+            f = a*np.exp(-.5*pow((x/width), 2))
+            plt.show()
+            return f
+    elif potential == 'hydrogen':
+        if psi0_name == 'groundstate':
+            f = (1/np.sqrt(np.pi*pow(a_0,3)))*np.exp(-x/a_0)
+            return f
+    raise ValueError('Starting state ' + psi0_name + ' not available for potential ' + potential)
 
 def initPotential(name, x): #initialzes a vector corresponding to the potential, evaluated at each X. h is the x step size, x0 is the lowest value of x
     x = x.copy() #array of x coordinates
@@ -58,12 +72,15 @@ def initPotential(name, x): #initialzes a vector corresponding to the potential,
     if name == 'free' or name == 'infwell': #free particle
         pass
     elif name == 'barrier':
+        # Value of the barrier was chosen to allow a tiny bit of tunneling
         V[J//2-4:J//2+4] = 3e-34 # Place a big barrier in the center of the well
     elif name == 'finwell':
         V[0:J//4] = 1e-34
         V[3*J//4:] = 1e-34
     elif name == 'harmonic':
-        V = 0.5*m*omega*(x-np.mean(x))**2
+        V = 1e-33*x**2
+    elif name == 'hydrogen':
+        V[1:-1] = -1e-6*pow(e,2)/(4*np.pi*e_0*x[1:-1])
     return V
 
 ### Analytical solutions for the potentials that have them and a getter =============
@@ -103,8 +120,7 @@ def harmonic(x, t):
 
 #====================================================================================
 
-
-def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
+def animPlot(psi,x,t,xbounds,V,analytical=None): #plotting function that creates time-animated function of Psi vs. x
     plotnum = 211
     potPlotnum = 212
     if analytical != None:
@@ -127,12 +143,12 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
         numPlot.set_xlabel('x')
         numPlot.set_ylabel('Numerical $\Psi$')
         numPlot.set_ylim([np.min(psiReal),np.max(psiReal)])
-        numPlot.set_xlim([x[0], x[-1]])
+        numPlot.set_xlim(xbounds)
         numPlot.legend(loc=1)
 
     numAni = animation.FuncAnimation(fig, animateNumerical, interval=1)
 
-    # If known, show analytical plot
+    # If available, show analytical plot
     if analytical != None:
         truePlot = fig.add_subplot(312)
         psiTrue = analytical(x, t)
@@ -149,7 +165,7 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
             truePlot.set_xlabel('x')
             truePlot.set_ylabel('Analytical $\Psi$')
             truePlot.set_ylim([np.min(psi),np.max(psi)])
-            truePlot.set_xlim([x[0], x[-1]])
+            truePlot.set_xlim(xbounds)
             truePlot.legend(loc=1)
 
         trueAni = animation.FuncAnimation(fig, animateTrue, interval=1)
@@ -158,31 +174,39 @@ def animPlot(psi,x,t,V,analytical=None): #plotting function that creates time-an
     pot.plot(x, V)
     pot.set_xlabel('x')
     pot.set_ylabel('V')
-    pot.set_xlim([x[0], x[-1]])
+    pot.set_xlim(xbounds)
     plt.show()
 
-def _3DPlot(psi,x,t,V,analytical=None): #plotting function that will plot, in 3D, Psi vs. x vs. time
+def _3DPlot(psi,x,t,xbounds,V,analytical=None): #plotting function that will plot, in 3D, x vs. time vs. psi
     h = x[1]-x[0] # Distance between support points
     X = len(x) # Number of support points
 
-    plotnum = 121
+    plotnum = 211
     if analytical != None:
         plotnum = 221
 
     solutions = plt.figure(num=1,figsize=(8,8),dpi=100,facecolor='white')
-    solutions.suptitle('Numerical and Analytical Solutions for ')
-    Jmesh, Nmesh = np.meshgrid(t, x)
+    Nmesh, Jmesh = np.meshgrid(t, x)
 
-    approx = solutions.add_subplot(plotnum,projection='3d')
-    approx.plot_surface(Jmesh[1], Nmesh[0],psi,cmap='rainbow')
-    approx.set_zlabel('$\Psi$')
-    approx.set_ylabel('t')
-    approx.set_xlabel('x')
+    approxReal = solutions.add_subplot(plotnum,projection='3d')
+    approxReal.plot_surface(Jmesh,Nmesh,psi.real,cmap='rainbow')
+    approxReal.set_zlabel('$\Psi$')
+    approxReal.set_ylabel('t')
+    approxReal.set_xlabel('x')
+    approxReal.set_title('Real component of $\Psi$')
+    approxReal.set_xlim(xbounds[0],xbounds[1])
 
+    approxImag = solutions.add_subplot(plotnum+1,projection='3d')
+    approxImag.plot_surface(Jmesh,Nmesh,psi.imag,cmap='rainbow')
+    approxImag.set_zlabel('$\Psi$')
+    approxImag.set_ylabel('t')
+    approxImag.set_xlabel('x')
+    approxImag.set_title('Imaginary Component of $\Psi$')
+    approxImag.set_xlim(xbounds[0],xbounds[1])
 
     if analytical != None:
         true = fig.add_subplot(122, projection='3d')
-        true.plot_surface(Jmesh[1], Nmesh[0],anal,cmap='rainbow')
+        true.plot_surface(Jmesh, Nmesh,anal.real,cmap='rainbow')
         true.set_zlabel('$\Psi$')
         true.set_ylabel('t')
         true.set_xlabel('x')
