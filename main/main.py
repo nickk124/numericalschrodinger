@@ -84,6 +84,7 @@ def main():
 
     parser.add_argument("initial",type=str,
                     help="initial wavefunction:\n"
+                            "    groundstate   : groundstate\n"
                             "    stationarystate   : stationarystate\n"
                             "    boundstate    : bound state\n"
                             "    wavepacket    : Chebyshev-FFT")
