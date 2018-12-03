@@ -3,7 +3,7 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
-import CrankDat as cn
+import cranknicholson as cn
 import chebfft as cf
 import schrodingerutils as ut
 

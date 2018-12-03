@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main\chebfft.py" />
-    <Compile Include="main\CrankDat.py" />
+    <Compile Include="main\cranknicholson.py" />
     <Compile Include="main\main.py" />
     <Compile Include="main\schrodingerutils.py" />
   </ItemGroup>
