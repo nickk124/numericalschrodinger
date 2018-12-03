@@ -42,7 +42,11 @@ def boundary(potential,u,u_last):
 # dt        float               time step
 # fBNC      function pointer    put in array of length J+2, and apply boundary conditions to it
 
-def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC):
+def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC, **kwargs):
+
+    n = kwargs.pop('n', 3)
+
+    n = int(n)
 
     x = np.linspace(xbounds[0], xbounds[-1], J) #array of x coordinates
     t = np.arange(0, N, dt)
@@ -50,7 +54,7 @@ def schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,fBNC):
     dx = (xbounds[-1]-xbounds[0])/J
 
     psi_0 = np.zeros(J+2) # Initial guess for
-    psi_0[1:-1] = ut.fINC(potential,psi0_name, x)
+    psi_0[1:-1] = ut.fINC(potential,psi0_name, x, n)
     psi_0 = fBNC(potential, psi_0, psi_0)
 
     if solver == 'CN':
@@ -80,9 +84,10 @@ def main():
 
     parser.add_argument("initial",type=str,
                     help="initial wavefunction:\n"
-                            "    groundstate   : ground state\n"
+                            "    stationarystate   : stationarystate\n"
                             "    boundstate    : bound state\n"
                             "    wavepacket    : Chebyshev-FFT")
+    parser.add_argument("-j","--n",type=int,default='3',help="energy level of stationary state (for infinite well)")
 
     # -----------------------------------------------------
     global dt
@@ -92,6 +97,7 @@ def main():
     solver       = args.solver
     potential    = args.potential
     psi0_name    = args.initial
+    n            = args.n
 
     N = 1e3 # Use 1000 time support points
     if potential == 'free': # This one gets boring after the wave dissipates
@@ -107,7 +113,7 @@ def main():
     Jorig = J # The number of support points in the interval [0,1]
     J *= (xbounds[-1] - xbounds[0]) # The total number of support points (over entire range)
 
-    psi = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary)
+    psi = schrodinger_solve(potential,solver,psi0_name,J,N,xbounds,dt,boundary, n=n)
     if (potential == 'hydrogen'):
         psi = psi[0:Jorig,:]
         xbounds = [0,1]

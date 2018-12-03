@@ -18,7 +18,7 @@ k = 1e-20 # Just guessing here at the wavenumber
 omega = np.sqrt(k/m)
 
 # Sets up the initial conditions for each potential configuration
-def fINC(potential,psi0_name,x):
+def fINC(potential,psi0_name,x,n):
     J = len(x)
     mu = np.mean(x)
     if potential == 'free':
@@ -28,9 +28,9 @@ def fINC(potential,psi0_name,x):
             f = a*np.exp(-.5*pow((x/width), 2))
             return f
     elif potential == 'infwell':
-        if psi0_name == "groundstate":
+        if psi0_name == "stationarystate":
             a = 1
-            f = np.sqrt(2/a)*np.sin(3*np.pi*x/a) # Equation for third harmonic
+            f = np.sqrt(2/a)*np.sin(n*np.pi*x/a) # Equation for third harmonic
             return f
     elif potential == 'finwell':
         if psi0_name == "boundstate":
